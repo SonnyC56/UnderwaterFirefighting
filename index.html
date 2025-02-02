@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Underwater Firefighter - City Defender (ASCII Edition)</title>
+  <style>
+    /* General Reset & Body */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: monospace;
+      color: #fff;
+    }
+    canvas { display: block; }
+
+    /* In-Game UI */
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+    #ui > div { margin-bottom: 5px; }
+    #ui #powerupTimers { font-weight: bold; }
+
+    /* Tutorial/Store Overlay */
+    #tutorial {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-height: 90vh;
+      width: 90%;
+      max-width: 800px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.95);
+      padding: 20px 30px;
+      border-radius: 10px;
+      z-index: 20;
+      text-align: center;
+    }
+    #tutorial h1, #tutorial h2, #tutorial h3, #tutorial h4 {
+      margin: 10px 0;
+    }
+    #tutorial p, #tutorial ul, #tutorial pre {
+      margin: 10px 0;
+    }
+    #tutorial pre {
+      background: #111;
+      padding: 10px;
+      display: inline-block;
+      text-align: left;
+      white-space: pre;
+      max-width: 600px;
+      margin: 10px auto;
+    }
+    .section { margin: 20px 0; }
+
+    /* Color Option Buttons */
+    .color-option {
+      display: inline-block;
+      vertical-align: top;
+      width: 40px;
+      height: 40px;
+      border: none;
+      margin: 5px;
+      cursor: pointer;
+    }
+    .selected { outline: 3px solid #fff; }
+    .disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Store Item Blocks */
+    .store-item {
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #444;
+      text-align: left;
+    }
+
+    /* Game Over Overlay */
+    #gameOver {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      background: rgba(0,0,0,0.9);
+      padding: 20px 30px;
+      border-radius: 10px;
+      z-index: 20;
+      display: none;
+    }
+    #gameOver button {
+      font-size: 1em;
+      padding: 10px 20px;
+      margin: 10px 5px;
+      cursor: pointer;
+    }
+
+    /* Notification Container */
+    .notification {
+      position: absolute;
+      top: 50px;
+      width: 100%;
+      text-align: center;
+      font-size: 20px;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    /* Credit Link in Bottom Left */
+    #creditLink {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-family: monospace;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <!-- In-Game UI -->
+  <div id="ui">
+    <div>Score: <span id="score">0</span></div>
+    <div>Combo: <span id="combo">0x</span></div>
+    <div>City Health: <span id="cityHealth">100/100</span></div>
+    <div>Ship Health: <span id="shipHealth">3/3</span></div>
+    <div>High Score: <span id="highScoreDisplay">0</span></div>
+    <div>Powerups: <span id="powerupTimers"></span></div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div id="gameOver">
+    <p id="gameOverText">Game Over!</p>
+    <button id="restartBtn">Restart</button>
+    <button id="storeBtn">Return to Store</button>
+  </div>
+
+  <!-- Combined Tutorial & Store Overlay -->
+  <div id="tutorial">
+    <h1>Underwater Firefighter - City Defender (ASCII Edition)</h1>
+    <h2>Mission Briefing &amp; Upgrades</h2>
+    <p>
+      Your mission is to extinguish fires and protect the city using advanced underwater firefighting techniques.
+    </p>
+    <h3>Controls</h3>
+    <ul style="text-align:left; display:inline-block;">
+      <li><strong>Move:</strong> Use WASD or Arrow Keys (with smooth, eased movement).</li>
+      <li><strong>Fire:</strong> Hold SPACE to shoot water (or your laser beam if active).</li>
+    </ul>
+    <h3>Enemies &amp; Obstacles</h3>
+    <p>Shoot down the fiery threats:</p>
+    <pre style="color: #ff3300;">
+  FFF  
+ FFFFF 
+  FFF  
+    </pre>
+    <p>or the electrical variant (which you must run into to extinguish):</p>
+    <pre style="color: #66ccff;">
+  EEE  
+ EEEEE 
+  EEE  
+    </pre>
+    <p>Avoid obstacles like these mines and debris:</p>
+    <pre style="color: #ffffff;">
+  /M\  
+ | M | 
+  \M/  
+    </pre>
+    <pre style="color: #cccccc;">
+   ___  
+  / D \ 
+  \___/ 
+    </pre>
+    <h3>Powerups</h3>
+    <p>
+      Collect powerups for bonuses:<br>
+      <strong>B</strong>: Speed Boost, <strong>H</strong>: Hose Upgrade (temporary), <strong>L</strong>: Laser Weapon,<br>
+      <strong>S</strong>: Shield, <strong>♥</strong>: City Repair.
+    </p>
+    <hr />
+    <!-- Color Selection Section -->
+    <div class="section" id="colorSelection">
+      <h3>Ship Colors</h3>
+      <p id="shipColorLabel">Ship Color: <span id="currentShipColor">Default (#0066cc)</span></p>
+      <div id="shipColorOptions"></div>
+      <h3>Trail Colors</h3>
+      <p id="currentTrailColorLabel">Trail Color: <span id="currentTrailColor">Default (#00ffff)</span></p>
+      <div id="trailColorOptions"></div>
+      <p>(Unlock additional colors in the store.)</p>
+    </div>
+    <!-- Store Upgrades Section -->
+    <div class="section" id="storeUpgrades">
+      <h3>Store Upgrades</h3>
+      <p>Your Currency: <span id="currencyDisplay">0</span></p>
+      <div class="store-item">
+        <h4>Hose Upgrade</h4>
+        <p>Status: <span id="hoseUpgradeDisplay">Tier 0 / 5</span></p>
+        <p>Cost: <span id="hoseUpgradeCostDisplay">500</span></p>
+        <button id="upgradeHoseBtn">Purchase Hose Upgrade</button>
+      </div>
+      <div class="store-item">
+        <h4>Base Speed Upgrade</h4>
+        <p>Status: <span id="speedUpgradeDisplay">Tier 0 / 5</span></p>
+        <p>Cost: <span id="speedUpgradeCostDisplay">1000</span></p>
+        <button id="upgradeSpeedBtn">Purchase Speed Upgrade</button>
+      </div>
+      <div class="store-item">
+        <h4>Unlock Ship Color</h4>
+        <p>Cost: <span id="shipColorUnlockCostDisplay">1000</span></p>
+        <button id="unlockShipColorBtn">Unlock Ship Color</button>
+      </div>
+      <div class="store-item">
+        <h4>Unlock Trail Color</h4>
+        <p>Cost: <span id="trailColorUnlockCostDisplay">1000</span></p>
+        <button id="unlockTrailColorBtn">Unlock Trail Color</button>
+      </div>
+      <div class="store-item">
+        <h4>Unlock Multi‑Color Trail</h4>
+        <p>Status: <span id="multiColorDisplay">Locked</span></p>
+        <p>Cost: <span id="multiColorCostDisplay">2000</span></p>
+        <button id="upgradeMultiColorBtn">Unlock Multi‑Color</button>
+      </div>
+      <div class="store-item">
+        <h4>Heart Spawn Rate Upgrade</h4>
+        <p>Current Heart Spawn Chance: <span id="heartChanceDisplay">10%</span></p>
+        <p>Cost: <span id="heartChanceCostDisplay">1500</span></p>
+        <button id="upgradeHeartChanceBtn">Upgrade Heart Rate</button>
+      </div>
+      <div class="store-item">
+        <h4>Unlock Background Music 2</h4>
+        <p>Status: <span id="background2Display">Locked</span></p>
+        <p>Cost: <span id="background2CostDisplay">1500</span></p>
+        <button id="unlockBackground2Btn">Unlock Background 2</button>
+      </div>
+      <!-- Background Music Selection Section -->
+      <div class="section" id="bgMusicSelection" style="display:none;">
+        <h4>Background Music</h4>
+        <label><input type="radio" name="bgMusic" value="default" checked> Default</label>
+        <label id="bgMusic2Label" style="display:none;"><input type="radio" name="bgMusic" value="background2"> Background 2</label>
+      </div>
+    </div>
+    <button id="startBtn">Start Mission</button>
+  </div>
+
+  <!-- Notification Container -->
+  <div id="notificationContainer" class="notification"></div>
+  
+  <!-- Credit Link -->
+  <a href="https://sonnycirasuolo.com" target="_blank" id="creditLink">sonnycirasuolo.com</a>
+  
+  <!-- Canvas -->
+  <canvas id="gameCanvas"></canvas>
+  
+  <script>
+    // ===============================
+    // ASCII Art Definitions
+    // ===============================
+    function drawAsciiArt(art, x, y, fontSize, color) {
+      ctx.font = `${fontSize}px monospace`;
+      ctx.fillStyle = color;
+      const lineHeight = fontSize * 1.2;
+      for (let i = 0; i < art.length; i++) {
+        ctx.fillText(art[i], x, y + i * lineHeight);
+      }
+    }
+    const rotatedPlayerArt = [
+      "   __  ",
+      "  /  ) ",
+      " |[] | ",
+      "  \\__)"
+    ];
+    const normalFireArt = [
+      "  FFF  ",
+      " FFFFF ",
+      "  FFF  "
+    ];
+    const electricalFireArt = [
+      "  EEE  ",
+      " EEEEE ",
+      "  EEE  "
+    ];
+    const mineArt = [
+      "  /M\\  ",
+      " | M | ",
+      "  \\M/  "
+    ];
+    const debrisArt = [
+      "  ___  ",
+      " / D \\ ",
+      " \\___/ "
+    ];
+    
+    const playerFontSize = 20;
+    const fireFontSize = 18;
+    const obstacleFontSize = 18;
+    const cityFontSize = 20;
+    const powerupFontSize = 20;
+    
+    // ===============================
+    // GLOBAL SETTINGS & PERSISTENCE
+    // ===============================
+    const asciiMode = true;
+    let playerColor = "#0066cc"; // Default ship color
+    let selectedTrailColor = "#00ffff"; // Default trail color
+    
+    // Expanded color options
+    let defaultShipColors = [
+      "#0066cc", "#ff0000", "#00ff00", "#ffff00",
+      "#ff00ff", "#00ffcc", "#ff6600", "#6600ff",
+      "#ff9933", "#33cc33"
+    ];
+    let defaultTrailColors = [
+      "#00ffff", "#ff00ff", "#ffff00", "#ff9900",
+      "#99ff00", "#ff6699", "#6699ff", "#33cc33",
+      "#cc33ff", "#33ffcc"
+    ];
+    
+    // Initialize storeData (persisted via localStorage)
+    let storeData = JSON.parse(localStorage.getItem('storeData')) || {
+      currency: 0,
+      hoseTier: 0,
+      speedTier: 0,
+      unlockedShipColors: ["#0066cc"],
+      unlockedTrailColors: ["#00ffff"],
+      multiColorTrailUnlocked: false,
+      heartSpawnChance: 0.10,
+      highScore: 0,
+      background2Unlocked: false
+    };
+    function saveStoreData() {
+      localStorage.setItem('storeData', JSON.stringify(storeData));
+    }
+    
+    // ===============================
+    // UI HELPER FUNCTIONS
+    // ===============================
+    function updateColorOptionsUI() {
+      const shipDiv = document.getElementById("shipColorOptions");
+      const trailDiv = document.getElementById("trailColorOptions");
+      shipDiv.innerHTML = "";
+      defaultShipColors.forEach(color => {
+        let btn = document.createElement("button");
+        btn.className = "color-option ship-color";
+        btn.style.background = color;
+        btn.setAttribute("data-color", color);
+        if (storeData.unlockedShipColors.includes(color)) {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".ship-color").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            playerColor = color;
+            document.getElementById("currentShipColor").textContent = color;
+          });
+        } else {
+          btn.classList.add("disabled");
+          btn.title = "Locked: Unlock in store";
+        }
+        shipDiv.appendChild(btn);
+      });
+    
+      trailDiv.innerHTML = "";
+      defaultTrailColors.forEach(color => {
+        let btn = document.createElement("button");
+        btn.className = "color-option trail-color";
+        btn.style.background = color;
+        btn.setAttribute("data-color", color);
+        if (storeData.unlockedTrailColors.includes(color)) {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".trail-color").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            selectedTrailColor = color;
+            document.getElementById("currentTrailColor").textContent = color;
+          });
+        } else {
+          btn.classList.add("disabled");
+          btn.title = "Locked: Unlock in store";
+        }
+        trailDiv.appendChild(btn);
+      });
+      // Add multi-color button if unlocked.
+      let multiBtn = document.createElement("button");
+      multiBtn.className = "color-option trail-color";
+      multiBtn.style.backgroundImage = "linear-gradient(to right, red, yellow, green, cyan, blue, magenta)";
+      multiBtn.setAttribute("data-color", "multicolor");
+      multiBtn.textContent = "MC";
+      if (storeData.multiColorTrailUnlocked) {
+        multiBtn.addEventListener("click", () => {
+          document.querySelectorAll(".trail-color").forEach(b => b.classList.remove("selected"));
+          multiBtn.classList.add("selected");
+          selectedTrailColor = "multicolor";
+          document.getElementById("currentTrailColor").textContent = "Multi‑Color";
+        });
+      } else {
+        multiBtn.classList.add("disabled");
+        multiBtn.title = "Locked: Unlock in store";
+      }
+      trailDiv.appendChild(multiBtn);
+    }
+    
+    function updateStoreUI() {
+      currencyDisplay.textContent = storeData.currency;
+      // Hose Upgrade: cost = 500 * 2^(hoseTier)
+      if (storeData.hoseTier < 5) {
+         hoseUpgradeDisplay.textContent = "Tier " + storeData.hoseTier + " / 5";
+         hoseUpgradeCostDisplay.textContent = 500 * Math.pow(2, storeData.hoseTier);
+      } else {
+         hoseUpgradeDisplay.textContent = "Maxed (Tier 5)";
+         hoseUpgradeCostDisplay.textContent = "N/A";
+      }
+      // Base Speed Upgrade: cost = 1000 * 2^(speedTier)
+      if (storeData.speedTier < 5) {
+         speedUpgradeDisplay.textContent = "Tier " + storeData.speedTier + " / 5";
+         speedUpgradeCostDisplay.textContent = 1000 * Math.pow(2, storeData.speedTier);
+      } else {
+         speedUpgradeDisplay.textContent = "Maxed (Tier 5)";
+         speedUpgradeCostDisplay.textContent = "N/A";
+      }
+      // Color unlock costs (fixed at 1000)
+      document.getElementById("shipColorUnlockCostDisplay").textContent = 1000;
+      document.getElementById("trailColorUnlockCostDisplay").textContent = 1000;
+      // Multi‑Color Trail upgrade
+      multiColorDisplay.textContent = storeData.multiColorTrailUnlocked ? "Unlocked" : "Locked";
+      multiColorCostDisplay.textContent = 2000;
+      // Heart Spawn Rate Upgrade
+      heartChanceDisplay.textContent = Math.floor(storeData.heartSpawnChance * 100) + "%";
+      heartChanceCostDisplay.textContent = 1500;
+      // Background Music 2 upgrade
+      background2Display.textContent = storeData.background2Unlocked ? "Unlocked" : "Locked";
+      background2CostDisplay.textContent = 1500;
+      // Show background music selection if unlocked.
+      if (storeData.background2Unlocked) {
+        document.getElementById("bgMusicSelection").style.display = "block";
+        document.getElementById("bgMusic2Label").style.display = "inline";
+      } else {
+        document.getElementById("bgMusicSelection").style.display = "none";
+      }
+      // Update high score display.
+      document.getElementById("highScoreDisplay").textContent = storeData.highScore;
+    }
+    
+    // ===============================
+    // CANVAS & GAME SETUP
+    // ===============================
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.textBaseline = "top";
+    
+    const scoreEl = document.getElementById("score");
+    const comboEl = document.getElementById("combo");
+    const powerupTimersEl = document.getElementById("powerupTimers");
+    const cityHealthEl = document.getElementById("cityHealth");
+    const shipHealthEl = document.getElementById("shipHealth");
+    const gameOverEl = document.getElementById("gameOver");
+    const gameOverText = document.getElementById("gameOverText");
+    const restartBtn = document.getElementById("restartBtn");
+    const tutorialEl = document.getElementById("tutorial");
+    const startBtn = document.getElementById("startBtn");
+    const notificationContainer = document.getElementById("notificationContainer");
+    
+    // Store UI elements
+    const currencyDisplay = document.getElementById("currencyDisplay");
+    const hoseUpgradeDisplay = document.getElementById("hoseUpgradeDisplay");
+    const hoseUpgradeCostDisplay = document.getElementById("hoseUpgradeCostDisplay");
+    const speedUpgradeDisplay = document.getElementById("speedUpgradeDisplay");
+    const speedUpgradeCostDisplay = document.getElementById("speedUpgradeCostDisplay");
+    const multiColorDisplay = document.getElementById("multiColorDisplay");
+    const multiColorCostDisplay = document.getElementById("multiColorCostDisplay");
+    const heartChanceDisplay = document.getElementById("heartChanceDisplay");
+    const heartChanceCostDisplay = document.getElementById("heartChanceCostDisplay");
+    const background2Display = document.getElementById("background2Display");
+    const background2CostDisplay = document.getElementById("background2CostDisplay");
+    
+    // Audio Setup
+    const backgroundMusic = new Audio("sounds/background.mp3");
+    backgroundMusic.loop = true;
+    backgroundMusic.volume = 0.5;
+    const waterSplashSound = new Audio("sounds/water-splash.mp3");
+    const laserSound = new Audio("sounds/laser.mp3");
+    const explosionSound = new Audio("sounds/explosion.mp3");
+    const powerupSound = new Audio("sounds/powerup.mp3");
+    const extinguishSound = new Audio("sounds/extinguish.mp3");
+    const fireWhooshSound = new Audio("sounds/fire-whoosh.mp3");
+    fireWhooshSound.loop = false;
+    
+    let score = 0, comboCount = 0, comboTimer = 0;
+    const comboResetTime = 2000;
+    let gameSpeed = 2, gameOver = false, lastTime = 0;
+    let bubbleTimer = 0, bubbleInterval = 2000;
+    let obstacleTimer = 0, obstacleInterval = 3000;
+    let boostTimer = 0, boostInterval = 7000;
+    let level = 1, laserActive = false;
+    let notifications = [];
+    const keys = {};
+    
+    let animationId;
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+    
+    // ===============================
+    // SCORE POPUP CLASS (for points display)
+    // ===============================
+    let scorePopups = [];
+    class ScorePopup {
+      constructor(x, y, points) {
+        this.x = x;
+        this.y = y;
+        this.points = points;
+        this.timer = 1000;
+        this.opacity = 1;
+      }
+      update(deltaTime) {
+        this.y -= 0.5;
+        this.timer -= deltaTime;
+        this.opacity = Math.max(this.timer / 1000, 0);
+      }
+      draw() {
+        ctx.font = "16px monospace";
+        ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+        ctx.fillText("+" + this.points, this.x, this.y);
+      }
+    }
+    
+    // ===============================
+    // CLASS DEFINITIONS
+    // ===============================
+    class Background {
+      constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.width = canvas.width;
+        this.height = canvas.height;
+        this.speed = gameSpeed / 2;
+      }
+      draw() {
+        if (asciiMode) {
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      update() {
+        this.x -= this.speed;
+        if (this.x <= -this.width) this.x = 0;
+        this.draw();
+      }
+    }
+    
+    class Player {
+      constructor() {
+        // Incorporate base speed upgrade: base speed = 5 + speedTier
+        this.x = 150;
+        this.y = canvas.height / 2 - 48;
+        this.baseSpeed = 5 + storeData.speedTier;
+        this.speed = this.baseSpeed;
+        this.dx = 0;
+        this.dy = 0;
+        this.boostTime = 0;
+        this.hoseUpgradeTime = 0;
+        this.laserWeaponTime = 0;
+        this.invisibilityTime = 0;
+        this.shieldTime = 0;
+        this.artWidth = 96;
+        this.artHeight = 96;
+        this.lives = 3;
+      }
+      draw() {
+        if (asciiMode) {
+          spawnPlayerTrail(this.x, this.y, this.artWidth, this.artHeight);
+          drawAsciiArt(rotatedPlayerArt, this.x, this.y, playerFontSize, playerColor);
+          // Draw shield indicator if active.
+          if (this.shieldTime > 0) {
+            let centerX = this.x + this.artWidth / 2;
+            let centerY = this.y + this.artHeight / 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, this.artWidth, 0, Math.PI * 2);
+            ctx.strokeStyle = "#00ffff";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+          }
+        }
+      }
+      update(deltaTime) {
+        if (this.boostTime > 0) {
+          this.boostTime -= deltaTime;
+          if (this.boostTime <= 0) { this.boostTime = 0; this.speed = this.baseSpeed; }
+        }
+        if (this.hoseUpgradeTime > 0) this.hoseUpgradeTime -= deltaTime;
+        if (this.laserWeaponTime > 0) this.laserWeaponTime -= deltaTime;
+        if (this.invisibilityTime > 0) this.invisibilityTime -= deltaTime;
+        if (this.shieldTime > 0) this.shieldTime -= deltaTime;
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.x < 0) this.x = 0;
+        if (this.y < 0) this.y = 0;
+        if (this.x + this.artWidth > canvas.width) this.x = canvas.width - this.artWidth;
+        if (this.y + this.artHeight > canvas.height) this.y = canvas.height - this.artHeight;
+        this.draw();
+      }
+      center() { return { cx: this.x + this.artWidth / 2, cy: this.y + this.artHeight / 2 }; }
+    }
+    
+    class WaterProjectile {
+      constructor(x, y, enhanced = false) {
+        this.x = x;
+        this.y = y;
+        this.enhanced = enhanced;
+        this.speed = enhanced ? 12 : 8;
+      }
+      draw() {
+        if (asciiMode) {
+          ctx.font = "16px monospace";
+          ctx.fillStyle = this.enhanced ? "#00ffff" : "#66ccff";
+          ctx.fillText("~", this.x, this.y);
+        }
+      }
+      update() { this.x += this.speed; this.draw(); }
+    }
+    
+    class FireBubble {
+      constructor(type = "normal") {
+        this.type = type;
+        this.x = canvas.width + 20;
+        this.y = Math.random() * (canvas.height - 60);
+        this.speed = gameSpeed + Math.random() * 2;
+      }
+      draw() {
+        if (asciiMode) {
+          const art = this.type === "electrical" ? electricalFireArt : normalFireArt;
+          const color = this.type === "electrical" ? "#66ccff" : "#ff3300";
+          drawAsciiArt(art, this.x, this.y, fireFontSize, color);
+        }
+      }
+      update() { this.x -= this.speed; this.draw(); }
+    }
+    
+    class Obstacle {
+      constructor() {
+        this.x = canvas.width + 40;
+        this.y = Math.random() * (canvas.height - 60);
+        this.speed = gameSpeed + Math.random() * 1.5;
+        this.type = Math.random() < 0.5 ? "mine" : "debris";
+      }
+      draw() {
+        if (asciiMode) {
+          let art = this.type === "mine" ? mineArt : debrisArt;
+          drawAsciiArt(art, this.x, this.y, obstacleFontSize, "#ffffff");
+        }
+      }
+      update() { this.x -= this.speed; this.draw(); }
+    }
+    
+    class City {
+      constructor() {
+        this.width = 200;
+        this.health = 100;
+        this.maxHealth = 100;
+        this.hitTimer = 0;
+        this.exploded = false;
+      }
+      hit(damage) { this.health -= damage; if (this.health < 0) this.health = 0; this.hitTimer = 300; }
+      update(deltaTime) { if (this.hitTimer > 0) this.hitTimer -= deltaTime; }
+      draw() {
+        if (asciiMode) {
+          const letters = ["C", "I", "T", "Y"];
+          const spacing = canvas.height / (letters.length + 1);
+          for (let i = 0; i < letters.length; i++) {
+            ctx.font = "72px monospace";
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(letters[i], 20, spacing * (i + 1));
+          }
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(this.width, 0);
+          ctx.lineTo(this.width, canvas.height);
+          ctx.stroke();
+          if (this.hitTimer > 0) {
+            ctx.fillStyle = "rgba(255,0,0,0.5)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+        }
+      }
+    }
+    
+    class BoostPickup {
+      constructor() { this.x = canvas.width + 30; this.y = Math.random() * (canvas.height - 30); this.speed = gameSpeed; }
+      draw() { ctx.font = "20px monospace"; ctx.fillStyle = "#ffff66"; ctx.fillText("B", this.x, this.y); }
+      update() { this.x -= this.speed; this.draw(); }
+    }
+    class HoseUpgradePickup {
+      constructor() { this.x = canvas.width + 30; this.y = Math.random() * (canvas.height - 30); this.speed = gameSpeed; }
+      draw() { ctx.font = "20px monospace"; ctx.fillStyle = "#66ffcc"; ctx.fillText("H", this.x, this.y); }
+      update() { this.x -= this.speed; this.draw(); }
+    }
+    class LaserWeaponPickup {
+      constructor() { this.x = canvas.width + 30; this.y = Math.random() * (canvas.height - 30); this.speed = gameSpeed; }
+      draw() { ctx.font = "20px monospace"; ctx.fillStyle = "#ff3333"; ctx.fillText("L", this.x, this.y); }
+      update() { this.x -= this.speed; this.draw(); }
+    }
+    class ShieldPickup {
+      constructor() { this.x = canvas.width + 30; this.y = Math.random() * (canvas.height - 30); this.speed = gameSpeed; }
+      draw() { ctx.font = "20px monospace"; ctx.fillStyle = "#00ffff"; ctx.fillText("S", this.x, this.y); }
+      update() { this.x -= this.speed; this.draw(); }
+    }
+    class CityHealthPickup {
+      constructor() { this.x = canvas.width + 30; this.y = Math.random() * (canvas.height - 30); this.speed = gameSpeed; }
+      draw() { ctx.font = "20px monospace"; ctx.fillStyle = "#ff66cc"; ctx.fillText("♥", this.x, this.y); }
+      update() { this.x -= this.speed; this.draw(); }
+    }
+    
+    let particles = [];
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.speed = Math.random() * 2 + 1;
+        this.angle = Math.random() * Math.PI * 2;
+        this.life = 200;
+        this.opacity = 1;
+        this.color = color;
+      }
+      update(deltaTime) {
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+        this.life -= deltaTime * 0.1;
+        this.opacity = this.life / 200;
+      }
+      draw() {
+        ctx.font = "12px monospace";
+        ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
+        ctx.fillText("*", this.x, this.y);
+      }
+    }
+    
+    function hexToRgbString(hex) {
+      hex = hex.replace(/^#/, '');
+      if (hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
+      const bigint = parseInt(hex, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return r + "," + g + "," + b;
+    }
+    
+    // Spawn a linear trail behind the player.
+    function spawnPlayerTrail(x, y, artWidth, artHeight) {
+      const trailX = x - 10;
+      const trailY = y + artHeight / 2;
+      const numParticles = 3;
+      for (let i = 0; i < numParticles; i++) {
+        let col;
+        if (player.boostTime > 0) {
+          col = "#ffcc00";
+        } else {
+          if (selectedTrailColor === "random") {
+            col = "#00ffff";
+          } else if (selectedTrailColor === "multicolor") {
+            const colors = ["#ff0000", "#ffff00", "#00ff00", "#00ffff", "#0000ff", "#ff00ff"];
+            col = colors[Math.floor(Math.random() * colors.length)];
+          } else {
+            col = selectedTrailColor;
+          }
+        }
+        let p = new Particle(trailX, trailY, hexToRgbString(col));
+        p.angle = Math.PI + (Math.random() * 0.1 - 0.05);
+        particles.push(p);
+      }
+    }
+    
+    // Double particle effects by multiplying the count by 2.
+    function spawnParticles(x, y, color, count) {
+      for (let i = 0; i < count * 2; i++) {
+        particles.push(new Particle(x, y, color));
+      }
+    }
+    
+    // ===============================
+    // INPUT HANDLING
+    // ===============================
+    document.addEventListener("keydown", (e) => {
+      keys[e.key] = true;
+      if (e.key === " ") {
+        if (player.laserWeaponTime > 0) {
+          laserActive = true;
+        } else {
+          const center = player.center();
+          if (player.hoseUpgradeTime > 0) {
+            // When hose upgrade powerup is active, shoot triple enhanced projectiles.
+            waterProjectiles.push(new WaterProjectile(center.cx, center.cy - 10, true));
+            waterProjectiles.push(new WaterProjectile(center.cx, center.cy, true));
+            waterProjectiles.push(new WaterProjectile(center.cx, center.cy + 10, true));
+          } else if (storeData.hoseTier > 0) {
+            let count = 1 + 2 * storeData.hoseTier;
+            let spacing = 10;
+            let startOffset = -Math.floor(count / 2) * spacing;
+            for (let i = 0; i < count; i++) {
+              waterProjectiles.push(new WaterProjectile(center.cx, center.cy + startOffset + i * spacing, false));
+            }
+          } else {
+            waterProjectiles.push(new WaterProjectile(center.cx, center.cy, false));
+          }
+          waterSplashSound.currentTime = 0;
+          waterSplashSound.play();
+        }
+      }
+    });
+    document.addEventListener("keyup", (e) => {
+      keys[e.key] = false;
+      if (e.key === " ") { laserActive = false; }
+    });
+    
+    function circleCollision(c1, c2) {
+      const r1 = c1.radius !== undefined ? c1.radius : 20;
+      const r2 = c2.radius !== undefined ? c2.radius : 20;
+      const dx = c1.x - c2.x, dy = c1.y - c2.y;
+      return Math.sqrt(dx * dx + dy * dy) < (r1 + r2);
+    }
+    function rectCollision(r1, r2) {
+      if (player.invisibilityTime > 0) return false;
+      return (r1.x < r2.x + 30 &&
+              r1.x + player.artWidth > r2.x &&
+              r1.y < r2.y + 30 &&
+              r1.y + player.artHeight > r2.y);
+    }
+    
+    function addNotification(message) {
+      notifications.push({ message: message, timer: 2000 });
+      if (message.includes("Acquired")) {
+        powerupSound.currentTime = 0;
+        powerupSound.play();
+      }
+    }
+    function updateNotifications(deltaTime) {
+      notificationContainer.innerHTML = "";
+      notifications.forEach(note => {
+        note.timer -= deltaTime;
+        const opacity = Math.max(note.timer / 2000, 0);
+        const div = document.createElement("div");
+        div.style.opacity = opacity;
+        div.textContent = note.message;
+        notificationContainer.appendChild(div);
+      });
+      notifications = notifications.filter(note => note.timer > 0);
+    }
+    
+    let player = new Player();
+    let background = new Background();
+    let city = new City();
+    let fireBubbles = [];
+    let obstacles = [];
+    let waterProjectiles = [];
+    let boostPickups = [];
+    let hoseUpgrades = [];
+    let laserPickups = [];
+    let shieldPickups = [];
+    let cityHealthPickups = [];
+    
+    // ===============================
+    // MAIN GAME LOOP
+    // ===============================
+    function animate(timestamp) {
+      const deltaTime = timestamp - lastTime;
+      lastTime = timestamp;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      background.speed = gameSpeed / 2;
+      background.update();
+      city.update(deltaTime);
+      city.draw();
+    
+      if (!gameOver) {
+        if (score > level * 100) { level++; }
+        let targetDx = 0, targetDy = 0;
+        if (keys["ArrowLeft"] || keys["a"]) targetDx = -player.speed;
+        if (keys["ArrowRight"] || keys["d"]) targetDx = player.speed;
+        if (keys["ArrowUp"] || keys["w"]) targetDy = -player.speed;
+        if (keys["ArrowDown"] || keys["s"]) targetDy = player.speed;
+        player.dx += (targetDx - player.dx) * 0.2;
+        player.dy += (targetDy - player.dy) * 0.2;
+        player.update(deltaTime);
+    
+        // Laser beam handling
+        if (laserActive && player.laserWeaponTime > 0) {
+          const center = player.center();
+          ctx.font = "16px monospace";
+          ctx.fillStyle = "#ff0000";
+          const beamLength = canvas.width - center.cx;
+          const numChars = Math.floor(beamLength / 10);
+          const beamText = "=".repeat(numChars);
+          ctx.fillText(beamText, center.cx, center.cy - 8);
+          for (let j = fireBubbles.length - 1; j >= 0; j--) {
+            let fire = fireBubbles[j];
+            if (fire.type === "electrical") continue;
+            if (fire.x > center.cx && fire.x < canvas.width && Math.abs(fire.y - center.cy) < 20) {
+              extinguishSound.currentTime = 0;
+              extinguishSound.play();
+              spawnParticles(fire.x, fire.y, "255,150,0", 15);
+              scorePopups.push(new ScorePopup(fire.x, fire.y, 5 * comboCount || 5));
+              fireBubbles.splice(j, 1);
+              comboCount = comboTimer > 0 ? comboCount + 1 : 1;
+              comboTimer = comboResetTime;
+              score += 5 * comboCount;
+              storeData.currency += 10;
+              saveStoreData();
+            }
+          }
+          if (laserSound.paused) { laserSound.loop = true; laserSound.play(); }
+        } else {
+          if (!laserSound.paused) { laserSound.pause(); laserSound.currentTime = 0; }
+        }
+    
+        for (let i = waterProjectiles.length - 1; i >= 0; i--) {
+          let proj = waterProjectiles[i];
+          proj.update();
+          if (proj.x > canvas.width) { waterProjectiles.splice(i, 1); continue; }
+          for (let j = fireBubbles.length - 1; j >= 0; j--) {
+            let fire = fireBubbles[j];
+            if (fire.type === "electrical") continue;
+            if (circleCollision(proj, fire)) {
+              extinguishSound.currentTime = 0;
+              extinguishSound.play();
+              spawnParticles(fire.x, fire.y, "255,150,0", 15);
+              scorePopups.push(new ScorePopup(fire.x, fire.y, 5 * comboCount || 5));
+              fireBubbles.splice(j, 1);
+              comboCount = comboTimer > 0 ? comboCount + 1 : 1;
+              comboTimer = comboResetTime;
+              score += 5 * comboCount;
+              waterProjectiles.splice(i, 1);
+              storeData.currency += 10;
+              saveStoreData();
+              break;
+            }
+          }
+        }
+        if (comboTimer > 0) { comboTimer -= deltaTime; } else { comboCount = 0; }
+        comboEl.textContent = comboCount + "x";
+    
+        bubbleTimer += deltaTime;
+        if (bubbleTimer > bubbleInterval) {
+          let type = Math.random() < 0.2 ? "electrical" : "normal";
+          fireBubbles.push(new FireBubble(type));
+          bubbleTimer = 0;
+          bubbleInterval = Math.max(500, bubbleInterval - 20);
+          gameSpeed += 0.05;
+        }
+        for (let i = fireBubbles.length - 1; i >= 0; i--) {
+          let fire = fireBubbles[i];
+          fire.speed = gameSpeed + Math.random() * 2;
+          fire.update();
+          if (fire.type === "electrical") {
+            if (rectCollision(player, fire)) {
+              spawnParticles(fire.x, fire.y, "0,255,255", 20);
+              scorePopups.push(new ScorePopup(fire.x, fire.y, 10));
+              fireBubbles.splice(i, 1);
+              score += 10;
+              storeData.currency += 10;
+              addNotification("Electrical fire extinguished!");
+              continue;
+            }
+          }
+          if (fire.x < city.width) {
+            city.hit(fire.type === "electrical" ? 15 : 10);
+            fireWhooshSound.currentTime = 0;
+            fireWhooshSound.play();
+            fireBubbles.splice(i, 1);
+          } else if (fire.x < 0) {
+            fireBubbles.splice(i, 1);
+          }
+        }
+    
+        obstacleTimer += deltaTime;
+        if (obstacleTimer > obstacleInterval) {
+          obstacles.push(new Obstacle());
+          obstacleTimer = 0;
+          obstacleInterval = Math.max(1000, obstacleInterval - 30);
+        }
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          let obs = obstacles[i];
+          obs.speed = gameSpeed + Math.random() * 1.5;
+          obs.update();
+          if (rectCollision(player, obs)) {
+            if (player.shieldTime > 0) {
+              player.shieldTime = 0;
+              addNotification("Shield absorbed the hit!");
+              obstacles.splice(i, 1);
+            } else {
+              player.lives--;
+              let center = player.center();
+              if (player.lives > 0) {
+                spawnParticles(center.cx, center.cy, "255,0,0", 30);
+              } else {
+                spawnParticles(center.cx, center.cy, "255,0,0", 50);
+                spawnParticles(center.cx, center.cy, "255,150,0", 50);
+                spawnParticles(center.cx, center.cy, "255,255,0", 50);
+              }
+              explosionSound.currentTime = 0;
+              explosionSound.play();
+              addNotification("Hit! Lives left: " + player.lives);
+              obstacles.splice(i, 1);
+              if (player.lives <= 0) { gameOver = true; }
+            }
+          } else if (obs.x < 0) {
+            obstacles.splice(i, 1);
+          }
+        }
+    
+        boostTimer += deltaTime;
+        if (boostTimer > boostInterval) {
+          let rnd = Math.random();
+          if (rnd < 0.2) { boostPickups.push(new BoostPickup()); }
+          else if (rnd < 0.35) { hoseUpgrades.push(new HoseUpgradePickup()); }
+          else if (rnd < 0.5) { laserPickups.push(new LaserWeaponPickup()); }
+          else if (rnd < 0.65) { shieldPickups.push(new ShieldPickup()); }
+          else if (rnd < 0.65 + storeData.heartSpawnChance) { cityHealthPickups.push(new CityHealthPickup()); }
+          boostTimer = 0;
+        }
+        for (let i = boostPickups.length - 1; i >= 0; i--) {
+          let boost = boostPickups[i];
+          boost.speed = gameSpeed;
+          boost.update();
+          if (rectCollision(player, boost)) {
+            player.boostTime = 5000;
+            player.speed = player.baseSpeed * 1.5;
+            boostPickups.splice(i, 1);
+            addNotification("Speed Boost Acquired!");
+          } else if (boost.x < 0) { boostPickups.splice(i, 1); }
+        }
+        for (let i = hoseUpgrades.length - 1; i >= 0; i--) {
+          let pickup = hoseUpgrades[i];
+          pickup.speed = gameSpeed;
+          pickup.update();
+          if (rectCollision(player, pickup)) {
+            player.hoseUpgradeTime = 5000;
+            hoseUpgrades.splice(i, 1);
+            addNotification("Hose Upgrade Acquired!");
+          } else if (pickup.x < 0) { hoseUpgrades.splice(i, 1); }
+        }
+        for (let i = laserPickups.length - 1; i >= 0; i--) {
+          let pickup = laserPickups[i];
+          pickup.speed = gameSpeed;
+          pickup.update();
+          if (rectCollision(player, pickup)) {
+            player.laserWeaponTime = 5000;
+            laserPickups.splice(i, 1);
+            addNotification("Laser Weapon Acquired!");
+          } else if (pickup.x < 0) { laserPickups.splice(i, 1); }
+        }
+        for (let i = shieldPickups.length - 1; i >= 0; i--) {
+          let pickup = shieldPickups[i];
+          pickup.speed = gameSpeed;
+          pickup.update();
+          if (rectCollision(player, pickup)) {
+            player.shieldTime = 5000;
+            shieldPickups.splice(i, 1);
+            addNotification("Shield Acquired!");
+          } else if (pickup.x < 0) { shieldPickups.splice(i, 1); }
+        }
+        for (let i = cityHealthPickups.length - 1; i >= 0; i--) {
+          let pickup = cityHealthPickups[i];
+          pickup.speed = gameSpeed;
+          pickup.update();
+          if (rectCollision(player, pickup)) {
+            city.health = Math.min(city.maxHealth, city.health + 20);
+            cityHealthPickups.splice(i, 1);
+            addNotification("City Repaired!");
+            spawnParticles(100, canvas.height / 2, "0,255,0", 200);
+            storeData.currency += 50;
+            saveStoreData();
+          } else if (pickup.x < 0) { cityHealthPickups.splice(i, 1); }
+        }
+      }
+    
+      // Update and draw score popups
+      for (let i = scorePopups.length - 1; i >= 0; i--) {
+        scorePopups[i].update(deltaTime);
+        scorePopups[i].draw();
+        if (scorePopups[i].timer <= 0) {
+          scorePopups.splice(i, 1);
+        }
+      }
+    
+      // Update particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update(deltaTime);
+        particles[i].draw();
+        if (particles[i].life <= 0) { particles.splice(i, 1); }
+      }
+      updateNotifications(deltaTime);
+    
+      powerupTimersEl.textContent =
+        (player.boostTime > 0 ? "Speed: " + (player.boostTime/1000).toFixed(1) + "s " : "") +
+        (player.hoseUpgradeTime > 0 ? "Hose: " + (player.hoseUpgradeTime/1000).toFixed(1) + "s " : "") +
+        (player.laserWeaponTime > 0 ? "Laser: " + (player.laserWeaponTime/1000).toFixed(1) + "s " : "") +
+        (player.shieldTime > 0 ? "Shield: " + (player.shieldTime/1000).toFixed(1) + "s " : "");
+      
+      cityHealthEl.textContent = city.health + "/" + city.maxHealth;
+      shipHealthEl.textContent = player.lives + "/3";
+      
+      if (city.health <= 0) {
+        if (!city.exploded) {
+          city.exploded = true;
+          spawnParticles(100, canvas.height / 2, "255,69,0", 50);
+          spawnParticles(100, canvas.height / 2, "255,140,0", 50);
+          spawnParticles(100, canvas.height / 2, "255,0,0", 50);
+        }
+        gameOver = true;
+        gameOverText.textContent = "City Burns!";
+      }
+      scoreEl.textContent = score;
+      gameOverEl.style.display = gameOver ? "block" : "none";
+      
+      // Update high score if necessary.
+      if (gameOver && score > storeData.highScore) {
+        storeData.highScore = score;
+        saveStoreData();
+      }
+    
+      animationId = requestAnimationFrame(animate);
+    }
+    
+    // ===============================
+    // TUTORIAL/STORE UI HANDLERS
+    // ===============================
+    updateColorOptionsUI();
+    
+    document.getElementById("upgradeHoseBtn").addEventListener("click", () => {
+      if (storeData.hoseTier < 5) {
+        let cost = 500 * Math.pow(2, storeData.hoseTier);
+        if (storeData.currency >= cost) {
+          storeData.currency -= cost;
+          storeData.hoseTier++;
+          saveStoreData();
+          updateStoreUI();
+          addNotification("Hose Upgrade Tier " + storeData.hoseTier + " Purchased!");
+        } else {
+          alert("Not enough currency!");
+        }
+      } else {
+        alert("Hose is fully upgraded!");
+      }
+    });
+    
+    document.getElementById("upgradeSpeedBtn").addEventListener("click", () => {
+      if (storeData.speedTier < 5) {
+        let cost = 1000 * Math.pow(2, storeData.speedTier);
+        if (storeData.currency >= cost) {
+          storeData.currency -= cost;
+          storeData.speedTier++;
+          saveStoreData();
+          updateStoreUI();
+          addNotification("Speed Upgrade Tier " + storeData.speedTier + " Purchased!");
+        } else {
+          alert("Not enough currency!");
+        }
+      } else {
+        alert("Speed is fully upgraded!");
+      }
+    });
+    
+    document.getElementById("unlockShipColorBtn").addEventListener("click", () => {
+      const cost = 1000;
+      if (storeData.currency < cost) {
+         alert("Not enough currency to unlock a ship color!");
+         return;
+      }
+      let lockedShip = defaultShipColors.filter(c => !storeData.unlockedShipColors.includes(c));
+      if (lockedShip.length > 0) {
+         let unlockColor = lockedShip[0];
+         storeData.currency -= cost;
+         storeData.unlockedShipColors.push(unlockColor);
+         addNotification("Unlocked ship color: " + unlockColor);
+         saveStoreData();
+         updateStoreUI();
+         updateColorOptionsUI();
+      } else {
+         alert("All ship colors unlocked!");
+      }
+    });
+    
+    document.getElementById("unlockTrailColorBtn").addEventListener("click", () => {
+      const cost = 1000;
+      if (storeData.currency < cost) {
+         alert("Not enough currency to unlock a trail color!");
+         return;
+      }
+      let lockedTrail = defaultTrailColors.filter(c => !storeData.unlockedTrailColors.includes(c));
+      if (lockedTrail.length > 0) {
+         let unlockColor = lockedTrail[0];
+         storeData.currency -= cost;
+         storeData.unlockedTrailColors.push(unlockColor);
+         addNotification("Unlocked trail color: " + unlockColor);
+         saveStoreData();
+         updateStoreUI();
+         updateColorOptionsUI();
+      } else {
+         alert("All trail colors unlocked!");
+      }
+    });
+    
+    document.getElementById("upgradeMultiColorBtn").addEventListener("click", () => {
+      if (!storeData.multiColorTrailUnlocked && storeData.currency >= 2000) {
+        storeData.currency -= 2000;
+        storeData.multiColorTrailUnlocked = true;
+        saveStoreData();
+        updateStoreUI();
+        updateColorOptionsUI();
+        addNotification("Multi‑Color Trail Unlocked!");
+      } else {
+        alert("Not enough currency or already unlocked!");
+      }
+    });
+    
+    document.getElementById("upgradeHeartChanceBtn").addEventListener("click", () => {
+      if (storeData.currency >= 1500) {
+        storeData.currency -= 1500;
+        storeData.heartSpawnChance += 0.05;
+        saveStoreData();
+        updateStoreUI();
+        addNotification("Heart Spawn Rate Upgraded!");
+      } else {
+        alert("Not enough currency for Heart Spawn Rate upgrade!");
+      }
+    });
+    
+    document.getElementById("unlockBackground2Btn").addEventListener("click", () => {
+      if (!storeData.background2Unlocked && storeData.currency >= 1500) {
+        storeData.currency -= 1500;
+        storeData.background2Unlocked = true;
+        saveStoreData();
+        updateStoreUI();
+        addNotification("Background Music 2 Unlocked!");
+      } else {
+        alert("Not enough currency or already unlocked!");
+      }
+    });
+    
+    startBtn.addEventListener("click", () => {
+      tutorialEl.style.display = "none";
+      lastTime = 0;
+      backgroundMusic.currentTime = 0;
+      backgroundMusic.play();
+      animate(0);
+    });
+    
+    restartBtn.addEventListener("click", () => {
+      cancelAnimationFrame(animationId);
+      storeData.currency += score;
+      saveStoreData();
+      score = 0; comboCount = 0; comboTimer = 0; gameSpeed = 2; gameOver = false; level = 1;
+      player = new Player(); background = new Background(); city = new City();
+      fireBubbles = []; obstacles = []; waterProjectiles = []; boostPickups = [];
+      hoseUpgrades = []; laserPickups = []; shieldPickups = []; cityHealthPickups = [];
+      particles = []; notifications = []; scorePopups = [];
+      bubbleTimer = 0; obstacleTimer = 0; boostTimer = 0;
+      bubbleInterval = 2000; obstacleInterval = 3000;
+      gameOverEl.style.display = "none";
+      lastTime = 0;
+      backgroundMusic.currentTime = 0;
+      backgroundMusic.play();
+      animate(0);
+    });
+    
+    document.getElementById("storeBtn").addEventListener("click", () => {
+      cancelAnimationFrame(animationId);
+      storeData.currency += score;
+      saveStoreData();
+      score = 0; comboCount = 0; comboTimer = 0; gameSpeed = 2; gameOver = false; level = 1;
+      player = new Player(); background = new Background(); city = new City();
+      fireBubbles = []; obstacles = []; waterProjectiles = []; boostPickups = [];
+      hoseUpgrades = []; laserPickups = []; shieldPickups = []; cityHealthPickups = [];
+      particles = []; notifications = []; scorePopups = [];
+      bubbleTimer = 0; obstacleTimer = 0; boostTimer = 0;
+      bubbleInterval = 2000; obstacleInterval = 3000;
+      gameOverEl.style.display = "none";
+      backgroundMusic.pause();
+      updateStoreUI();
+      tutorialEl.style.display = "block";
+    });
+    
+    // Background music radio button selection.
+    document.getElementsByName("bgMusic").forEach(radio => {
+      radio.addEventListener("change", (e) => {
+        if (e.target.value === "default") {
+          backgroundMusic.src = "sounds/background.mp3";
+        } else if (e.target.value === "background2") {
+          backgroundMusic.src = "sounds/background2.mp3";
+        }
+        backgroundMusic.play();
+      });
+    });
+    
+    updateStoreUI();
+  </script>
+</body>
+</html>
