@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Underwater Firefighter - City Defender (ASCII Edition)</title>
+  <title>Underwater Firefighter</title>
   <style>
     /* General Reset & Body */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -147,7 +147,7 @@
 
   <!-- Combined Tutorial & Store Overlay -->
   <div id="tutorial">
-    <h1>Underwater Firefighter - City Defender (ASCII Edition)</h1>
+    <h1>Underwater Firefighter</h1>
     <h2>Mission Briefing &amp; Upgrades</h2>
     <p>
       Your mission is to extinguish fires and protect the city using advanced underwater firefighting techniques.
@@ -306,6 +306,9 @@
     const cityFontSize = 20;
     const powerupFontSize = 20;
     
+    // Global shield rotation for animated shield effect.
+    let shieldRotation = 0;
+    
     // ===============================
     // GLOBAL SETTINGS & PERSISTENCE
     // ===============================
@@ -325,8 +328,8 @@
       "#cc33ff", "#33ffcc"
     ];
     
-    // Initialize storeData (persisted via localStorage)
-    let storeData = JSON.parse(localStorage.getItem('storeData')) || {
+    // Merge defaults into storeData (ensuring highScore is set)
+    const defaultStoreData = {
       currency: 0,
       hoseTier: 0,
       speedTier: 0,
@@ -337,6 +340,10 @@
       highScore: 0,
       background2Unlocked: false
     };
+    let storedData = localStorage.getItem('storeData');
+    let storeData = storedData ? JSON.parse(storedData) : {};
+    storeData = Object.assign({}, defaultStoreData, storeData);
+    
     function saveStoreData() {
       localStorage.setItem('storeData', JSON.stringify(storeData));
     }
@@ -445,6 +452,16 @@
       }
       // Update high score display.
       document.getElementById("highScoreDisplay").textContent = storeData.highScore;
+      
+      // --- Hide purchase buttons if upgrade is maxed or already purchased ---
+      document.getElementById("upgradeHoseBtn").style.display = (storeData.hoseTier < 5) ? "inline-block" : "none";
+      document.getElementById("upgradeSpeedBtn").style.display = (storeData.speedTier < 5) ? "inline-block" : "none";
+      document.getElementById("unlockShipColorBtn").style.display =
+        (defaultShipColors.filter(c => !storeData.unlockedShipColors.includes(c)).length > 0) ? "inline-block" : "none";
+      document.getElementById("unlockTrailColorBtn").style.display =
+        (defaultTrailColors.filter(c => !storeData.unlockedTrailColors.includes(c)).length > 0) ? "inline-block" : "none";
+      document.getElementById("upgradeMultiColorBtn").style.display = (!storeData.multiColorTrailUnlocked) ? "inline-block" : "none";
+      document.getElementById("unlockBackground2Btn").style.display = (!storeData.background2Unlocked) ? "inline-block" : "none";
     }
     
     // ===============================
@@ -579,15 +596,20 @@
         if (asciiMode) {
           spawnPlayerTrail(this.x, this.y, this.artWidth, this.artHeight);
           drawAsciiArt(rotatedPlayerArt, this.x, this.y, playerFontSize, playerColor);
-          // Draw shield indicator if active.
+          // Animated shield using "*" characters (if active)
           if (this.shieldTime > 0) {
             let centerX = this.x + this.artWidth / 2;
             let centerY = this.y + this.artHeight / 2;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, this.artWidth, 0, Math.PI * 2);
-            ctx.strokeStyle = "#00ffff";
-            ctx.lineWidth = 4;
-            ctx.stroke();
+            let shieldRadius = this.artWidth;
+            let numStars = 12;
+            for (let i = 0; i < numStars; i++) {
+              let angle = shieldRotation + (i * 2 * Math.PI / numStars);
+              let starX = centerX + shieldRadius * Math.cos(angle);
+              let starY = centerY + shieldRadius * Math.sin(angle);
+              ctx.font = "16px monospace";
+              ctx.fillStyle = "#00ffff";
+              ctx.fillText("*", starX, starY);
+            }
           }
         }
       }
@@ -797,7 +819,7 @@
         } else {
           const center = player.center();
           if (player.hoseUpgradeTime > 0) {
-            // When hose upgrade powerup is active, shoot triple enhanced projectiles.
+            // Triple enhanced projectiles when hose upgrade powerup is active.
             waterProjectiles.push(new WaterProjectile(center.cx, center.cy - 10, true));
             waterProjectiles.push(new WaterProjectile(center.cx, center.cy, true));
             waterProjectiles.push(new WaterProjectile(center.cx, center.cy + 10, true));
@@ -873,6 +895,7 @@
     function animate(timestamp) {
       const deltaTime = timestamp - lastTime;
       lastTime = timestamp;
+      shieldRotation += deltaTime * 0.005;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       background.speed = gameSpeed / 2;
       background.update();
@@ -905,8 +928,9 @@
             if (fire.x > center.cx && fire.x < canvas.width && Math.abs(fire.y - center.cy) < 20) {
               extinguishSound.currentTime = 0;
               extinguishSound.play();
-              spawnParticles(fire.x, fire.y, "255,150,0", 15);
-              scorePopups.push(new ScorePopup(fire.x, fire.y, 5 * comboCount || 5));
+              // 2x particle effect: use 30 instead of 15.
+              spawnParticles(fire.x, fire.y, "255,150,0", 30);
+              scorePopups.push(new ScorePopup(fire.x, fire.y, 5 * (comboCount || 1)));
               fireBubbles.splice(j, 1);
               comboCount = comboTimer > 0 ? comboCount + 1 : 1;
               comboTimer = comboResetTime;
@@ -930,8 +954,9 @@
             if (circleCollision(proj, fire)) {
               extinguishSound.currentTime = 0;
               extinguishSound.play();
-              spawnParticles(fire.x, fire.y, "255,150,0", 15);
-              scorePopups.push(new ScorePopup(fire.x, fire.y, 5 * comboCount || 5));
+              // 2x particle effect: use 30 instead of 15.
+              spawnParticles(fire.x, fire.y, "255,150,0", 30);
+              scorePopups.push(new ScorePopup(fire.x, fire.y, 5 * (comboCount || 1)));
               fireBubbles.splice(j, 1);
               comboCount = comboTimer > 0 ? comboCount + 1 : 1;
               comboTimer = comboResetTime;
@@ -959,15 +984,16 @@
           fire.speed = gameSpeed + Math.random() * 2;
           fire.update();
           if (fire.type === "electrical") {
-            if (rectCollision(player, fire)) {
-              spawnParticles(fire.x, fire.y, "0,255,255", 20);
-              scorePopups.push(new ScorePopup(fire.x, fire.y, 10));
-              fireBubbles.splice(i, 1);
-              score += 10;
-              storeData.currency += 10;
-              addNotification("Electrical fire extinguished!");
-              continue;
-            }
+             if (rectCollision(player, fire)) {
+                // 2x particle effect: use 40 instead of 20.
+                spawnParticles(fire.x, fire.y, "0,255,255", 40);
+                scorePopups.push(new ScorePopup(fire.x, fire.y, 10));
+                fireBubbles.splice(i, 1);
+                score += 10;
+                storeData.currency += 10;
+                addNotification("Electrical fire extinguished!");
+                continue;
+             }
           }
           if (fire.x < city.width) {
             city.hit(fire.type === "electrical" ? 15 : 10);
@@ -1010,9 +1036,7 @@
               obstacles.splice(i, 1);
               if (player.lives <= 0) { gameOver = true; }
             }
-          } else if (obs.x < 0) {
-            obstacles.splice(i, 1);
-          }
+          } else if (obs.x < 0) { obstacles.splice(i, 1); }
         }
     
         boostTimer += deltaTime;
@@ -1120,12 +1144,16 @@
       scoreEl.textContent = score;
       gameOverEl.style.display = gameOver ? "block" : "none";
       
-      // Update high score if necessary.
+      // Update high score if game over and score exceeds stored high score.
       if (gameOver && score > storeData.highScore) {
         storeData.highScore = score;
         saveStoreData();
+        updateStoreUI();
       }
     
+      // Ensure high score display is always updated
+      document.getElementById("highScoreDisplay").textContent = storeData.highScore;
+      
       animationId = requestAnimationFrame(animate);
     }
     
@@ -1254,6 +1282,11 @@
     });
     
     restartBtn.addEventListener("click", () => {
+      // Update high score before resetting if necessary.
+      if (score > storeData.highScore) {
+        storeData.highScore = score;
+        saveStoreData();
+      }
       cancelAnimationFrame(animationId);
       storeData.currency += score;
       saveStoreData();
@@ -1272,6 +1305,11 @@
     });
     
     document.getElementById("storeBtn").addEventListener("click", () => {
+      // Update high score before resetting if necessary.
+      if (score > storeData.highScore) {
+        storeData.highScore = score;
+        saveStoreData();
+      }
       cancelAnimationFrame(animationId);
       storeData.currency += score;
       saveStoreData();
