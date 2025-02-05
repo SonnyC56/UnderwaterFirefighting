@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Underwater Firefighter</title>
+    <link rel="icon" href="data:,">
     <style>
       /* General Reset & Body */
       * {
@@ -16,7 +17,7 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-        background: #001f3f; /* dark blue main background */
+        background: #000408; /* even darker blue, almost pure black */
         font-family: monospace;
         color: #fff;
       }
@@ -65,7 +66,7 @@
         border: 1px solid #fff;
         border-radius: 4px;
       }
-      /* Full-Screen Tutorial/Store Overlay with 800px top padding */
+      /* Full-Screen Tutorial/Store Overlay */
       #tutorial {
         position: fixed;
         top: 0;
@@ -76,30 +77,32 @@
         z-index: 20;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         overflow-y: auto;
+        padding-top: 20px;
       }
       #tutorial .content {
-        max-width: 800px;
-        padding: 1200px 30px 100px;
-        text-align: center;
-        color: #fff;
+        max-width: 1000px;
+        padding: 30px;
+        background: rgba(0,0,0,0.8);
+        border-radius: 10px;
+        border: 1px solid #00ffff;
       }
       /* ASCII Art Style Buttons for the Intro Page */
       .ascii-button {
         font-family: monospace;
-        font-size: 20px;
-        background: none;
-        border: 2px solid #fff;
-        padding: 10px 20px;
-        margin: 10px;
-        color: #fff;
+        font-size: 16px;
+        background: rgba(0,0,0,0.3);
+        border: 2px solid #00ffff;
+        padding: 8px 16px;
+        margin: 5px;
+        color: #00ffff;
         cursor: pointer;
-        transition: background 0.3s, color 0.3s;
+        transition: all 0.3s;
       }
       .ascii-button:hover {
-        background: #fff;
-        color: #001f3f;
+        background: #00ffff;
+        color: #000;
       }
       /* Color Option Buttons */
       .color-option {
@@ -118,12 +121,24 @@
         opacity: 0.5;
         cursor: not-allowed;
       }
-      /* Store Item Blocks */
+      /* Store Item Blocks - Add some spacing */
       .store-item {
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #444;
-        text-align: left;
+        background: rgba(255,255,255,0.05);
+        padding: 20px;
+        border-radius: 8px;
+        transition: background 0.3s;
+      }
+      .store-item:hover {
+        background: rgba(255,255,255,0.1);
+      }
+      .store-item h4 {
+        color: #00ffff;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+      }
+      .store-item button {
+        margin-top: 10px;
+        width: 100%;
       }
       /* Game Over Overlay */
       #gameOver {
@@ -165,9 +180,127 @@
         font-family: monospace;
         z-index: 10;
       }
+      /* Level transition modal */
+      .level-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.95);
+        padding: 30px;
+        border: 2px solid #fff;
+        color: #fff;
+        text-align: center;
+        z-index: 1000;
+        min-width: 300px;
+        font-family: monospace;
+      }
+      .level-modal button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #fff;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        font-family: monospace;
+      }
+      .level-modal button:hover {
+        background: #ccc;
+      }
+      /* Add spacing between sections */
+      .section {
+        margin-bottom: 30px;
+        padding: 15px;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.2);
+      }
+      /* Make the tutorial scrollable but keep header visible */
+      #tutorial {
+        overflow-y: auto;
+      }
+      #tutorial h1 {
+        color: #00ffff;
+        text-shadow: 0 0 10px #00ffff;
+        margin-bottom: 30px;
+      }
+      .powerup-item {
+        background: rgba(255,255,255,0.1);
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+      }
+
+      .powerup-item p {
+        margin: 5px 0;
+        font-size: 0.9em;
+      }
+
+      .section h2 {
+        color: #00ffff;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #00ffff;
+        padding-bottom: 5px;
+      }
+
+      .section h3 {
+        color: #ffcc00;
+        margin: 10px 0;
+      }
+
+      .section ul li {
+        margin: 8px 0;
+        line-height: 1.4;
+      }
+
+      /* Add Pause Button Styles */
+      #pauseBtn {
+        position: absolute;
+        top: 10px;
+        left: calc(300px + 20px); /* city.width + margin */
+        z-index: 10;
+        font-family: monospace;
+        font-size: 24px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #00ffff;
+        color: #00ffff;
+        padding: 5px 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      #pauseBtn:hover {
+        background: #00ffff;
+        color: #000;
+      }
+      
+      /* Pause Menu */
+      #pauseMenu {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 20px;
+        border: 2px solid #00ffff;
+        z-index: 100;
+        text-align: center;
+      }
+      #pauseMenu button {
+        margin: 10px;
+      }
     </style>
   </head>
   <body>
+    <!-- Add Pause Button -->
+    <button id="pauseBtn">⏸️</button>
+    
+    <!-- Add Pause Menu -->
+    <div id="pauseMenu">
+      <h2>Game Paused</h2>
+      <button class="ascii-button" id="resumeBtn">Resume</button>
+      <button class="ascii-button" id="quitToMenuBtn">Quit to Menu</button>
+    </div>
+
     <!-- In-Game UI -->
     <div id="ui">
       <div>Score: <span id="score">0</span></div>
@@ -196,163 +329,240 @@
     <div id="tutorial">
       <div class="content">
         <h1>Underwater Firefighter</h1>
-        <h2>Mission Briefing &amp; Upgrades</h2>
-        <p>
-          Your mission is to extinguish fires and protect the city using
-          advanced underwater firefighting techniques.
-        </p>
-        <h3>Controls</h3>
-        <ul style="text-align: left; display: inline-block">
-          <li>
-            <strong>Move:</strong> Use WASD or Arrow Keys (with smooth, eased
-            movement).<br />
-            <em
-              >(On mobile, use the left half of the screen as a virtual
-              joystick.)</em
-            >
-          </li>
-          <li>
-            <strong>Fire:</strong> Hold SPACE to shoot water (or your laser beam
-            if active).<br />
-            <em>(On mobile, tap/hold the right half of the screen to fire.)</em>
-          </li>
-        </ul>
-        <h3>Enemies &amp; Obstacles</h3>
-        <p>Shoot down the fiery threats:</p>
-        <pre style="color: #ff3300">
+        <div class="section" style="text-align: left; padding: 20px; line-height: 1.5;">
+          <h2>🌊 Mission Background</h2>
+          <p>
+            The year is 2157. Rising sea levels have forced humanity to build vast underwater cities protected by advanced force fields.
+            But even beneath the waves, the ancient threat of fire persists - taking new and dangerous forms in the depths.
+          </p>
+          <p>
+            As an elite Aqua Fire Response Unit pilot, you are the city's last line of defense. Your advanced submersible is equipped
+            with specialized water-projection technology and can be upgraded with cutting-edge weapons and defenses.
+          </p>
+        </div>
+
+        <div class="section" style="text-align: left; padding: 20px;">
+          <h2>🎮 Controls</h2>
+          <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px;">
+            <h3>💻 Desktop:</h3>
+            <ul style="list-style-type: none; padding-left: 20px;">
+              <li>🎯 <strong>Move:</strong> WASD or Arrow Keys</li>
+              <li>💧 <strong>Fire Water:</strong> Hold SPACE</li>
+            </ul>
+
+            <h3 style="margin-top: 15px;">📱 Mobile:</h3>
+            <ul style="list-style-type: none; padding-left: 20px;">
+              <li>🎯 <strong>Move:</strong> Left side virtual joystick</li>
+              <li>💧 <strong>Fire:</strong> Tap/hold right side</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section" style="text-align: left; padding: 20px;">
+          <h2>⚠️ Threats</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="background: rgba(255,0,0,0.1); padding: 15px; border-radius: 5px;">
+              <h3>🔥 Normal Fires</h3>
+              <pre style="color: #ff3300; margin: 10px 0;">
   FFF  
  FFFFF 
-  FFF  
-      </pre
-        >
-        <p>
-          or the electrical variant (which you must run into to extinguish,
-          unless you have the new Electric Hose):
-        </p>
-        <pre style="color: #66ccff">
+  FFF  </pre>
+              <p>Extinguish with your water cannon</p>
+            </div>
+
+            <div style="background: rgba(0,255,255,0.1); padding: 15px; border-radius: 5px;">
+              <h3>⚡ Electrical Fires</h3>
+              <pre style="color: #66ccff; margin: 10px 0;">
   EEE  
  EEEEE 
-  EEE  
-      </pre
-        >
-        <p>Avoid obstacles like these mines and debris:</p>
-        <pre style="color: #ffffff">
+  EEE  </pre>
+              <p>Requires Electric Hose or direct contact</p>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h3>☠️ Hazards</h3>
+            <div style="display: flex; justify-content: space-around; margin: 10px 0;">
+              <div>
+                <pre style="color: #ffffff">
   /M\  
  | M | 
-  \M/  
-      </pre
-        >
-        <pre style="color: #cccccc">
+  \M/  </pre>
+                <p>Mines</p>
+              </div>
+              <div>
+                <pre style="color: #cccccc">
    ___  
   / D \ 
-  \___/ 
-      </pre
-        >
-        <h3>Powerups</h3>
-        <p>
-          Collect powerups for bonuses:<br />
-          <strong>B</strong>: Speed Boost, <strong>H</strong>: Hose Upgrade
-          (temporary, now doubles your firing width), <strong>L</strong>: Laser
-          Weapon,<br />
-          <strong>S</strong>: Shield, <strong>♥</strong>: City Repair, and
-          <strong>⚡</strong>: Electric Hose (allows your water projectiles to
-          also extinguish electrical fires).
-        </p>
-        <hr />
-        <!-- Color Selection Section -->
-        <div class="section" id="colorSelection">
-          <h3>Ship Colors</h3>
-          <p id="shipColorLabel">
-            Ship Color: <span id="currentShipColor">Default (#0066cc)</span>
-          </p>
-          <div id="shipColorOptions"></div>
-          <h3>Trail Colors</h3>
-          <p id="currentTrailColorLabel">
-            Trail Color: <span id="currentTrailColor">Default (#00ffff)</span>
-          </p>
-          <div id="trailColorOptions"></div>
-          <p>(Unlock additional colors in the store.)</p>
+  \___/ </pre>
+                <p>Debris</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div class="section" style="text-align: left; padding: 20px;">
+          <h2>🎯 Objectives</h2>
+          <ul style="list-style-type: none; padding-left: 20px;">
+            <li>🏰 Protect the underwater city</li>
+            <li>🔥 Extinguish fires before they reach the shields</li>
+            <li>💪 Survive increasingly difficult waves</li>
+            <li>👑 Defeat powerful bosses</li>
+            <li>💰 Earn currency for upgrades</li>
+          </ul>
+        </div>
+
+        <div class="section" style="text-align: left; padding: 20px;">
+          <h2>⭐ Power-ups</h2>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <div class="powerup-item">
+              <span style="font-size: 24px;">🚀</span>
+              <p><strong>Speed Boost</strong><br>Temporary speed increase</p>
+            </div>
+            <div class="powerup-item">
+              <span style="font-size: 24px;">💧</span>
+              <p><strong>Hose Upgrade</strong><br>Wider water spray</p>
+            </div>
+            <div class="powerup-item">
+              <span style="font-size: 24px;">🔫</span>
+              <p><strong>Laser Weapon</strong><br>Powerful beam weapon</p>
+            </div>
+            <div class="powerup-item">
+              <span style="font-size: 24px;">🛡️</span>
+              <p><strong>Shield</strong><br>Temporary invincibility</p>
+            </div>
+            <div class="powerup-item">
+              <span style="font-size: 24px;">♥️</span>
+              <p><strong>City Repair</strong><br>Restore city health</p>
+            </div>
+            <div class="powerup-item">
+              <span style="font-size: 24px;">⚡</span>
+              <p><strong>Electric Hose</strong><br>Handle electrical fires</p>
+            </div>
+            <div class="powerup-item">
+              <span style="font-size: 24px;">💝</span>
+              <p><strong>Life Repair</strong><br>Restore ship health</p>
+            </div>
+            <div class="powerup-item">
+              <span style="font-size: 24px;">💣</span>
+              <p><strong>Bomb</strong><br>Clear all visible fires</p>
+            </div>
+            <div class="powerup-item">
+              <span style="font-size: 24px;">🌟</span>
+              <p><strong>Life Shield</strong><br>Extra life + protection</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Store Upgrades Section -->
         <div class="section" id="storeUpgrades">
-          <h3>Store Upgrades</h3>
-          <p>Your Currency: <span id="currencyDisplay">0</span></p>
-          <div class="store-item">
-            <h4>Hose Upgrade</h4>
-            <p>Status: <span id="hoseUpgradeDisplay">Tier 0 / 5</span></p>
-            <p>Cost: <span id="hoseUpgradeCostDisplay">500</span></p>
-            <button id="upgradeHoseBtn" class="ascii-button">
-              Purchase Hose Upgrade
-            </button>
-          </div>
-          <div class="store-item">
-            <h4>Base Speed Upgrade</h4>
-            <p>Status: <span id="speedUpgradeDisplay">Tier 0 / 5</span></p>
-            <p>Cost: <span id="speedUpgradeCostDisplay">1000</span></p>
-            <button id="upgradeSpeedBtn" class="ascii-button">
-              Purchase Speed Upgrade
-            </button>
-          </div>
-          <div class="store-item">
-            <h4>Unlock Ship Color</h4>
-            <p>Cost: <span id="shipColorUnlockCostDisplay">1000</span></p>
-            <button id="unlockShipColorBtn" class="ascii-button">
-              Unlock Ship Color
-            </button>
-          </div>
-          <div class="store-item">
-            <h4>Unlock Trail Color</h4>
-            <p>Cost: <span id="trailColorUnlockCostDisplay">1000</span></p>
-            <button id="unlockTrailColorBtn" class="ascii-button">
-              Unlock Trail Color
-            </button>
-          </div>
-          <div class="store-item">
-            <h4>Unlock Multi‑Color Trail</h4>
-            <p>Status: <span id="multiColorDisplay">Locked</span></p>
-            <p>Cost: <span id="multiColorCostDisplay">2000</span></p>
-            <button id="upgradeMultiColorBtn" class="ascii-button">
-              Unlock Multi‑Color
-            </button>
-          </div>
-          <div class="store-item">
-            <h4>Heart Spawn Rate Upgrade</h4>
-            <p>
-              Current Heart Spawn Chance:
-              <span id="heartChanceDisplay">10%</span>
-            </p>
-            <p>Cost: <span id="heartChanceCostDisplay">1500</span></p>
-            <button id="upgradeHeartChanceBtn" class="ascii-button">
-              Upgrade Heart Rate
-            </button>
-          </div>
-          <div class="store-item">
-            <h4>Unlock Background Music 2</h4>
-            <p>Status: <span id="background2Display">Locked</span></p>
-            <p>Cost: <span id="background2CostDisplay">1500</span></p>
-            <button id="unlockBackground2Btn" class="ascii-button">
-              Unlock Background 2
-            </button>
-          </div>
-          <!-- Background Music Selection Section -->
-          <div class="section" id="bgMusicSelection">
-            <h4>Background Music</h4>
-            <label
-              ><input type="radio" name="bgMusic" value="default" checked />
-              Default</label
-            >
-            <label id="bgMusic2Label" style="display: none"
-              ><input type="radio" name="bgMusic" value="background2" />
-              Background 2</label
-            >
-          </div>
-          <!-- New: Local Track Selection -->
-          <div id="localTrackContainer" style="margin-top: 10px">
-            <label for="localTrackInput">Select Local MP3 Track: </label>
-            <input type="file" id="localTrackInput" accept="audio/*" />
+          <h2>💰 Store Upgrades</h2>
+          <p style="font-size: 1.2em; margin-bottom: 15px;">Your Currency: <span id="currencyDisplay">0</span></p>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="store-item">
+              <h4>💧 Hose Upgrade</h4>
+              <p>Status: <span id="hoseUpgradeDisplay">Tier 0 / 5</span></p>
+              <p>Cost: <span id="hoseUpgradeCostDisplay">500</span></p>
+              <button id="upgradeHoseBtn" class="ascii-button">Purchase Hose Upgrade</button>
+            </div>
+
+            <div class="store-item">
+              <h4>🚀 Base Speed Upgrade</h4>
+              <p>Status: <span id="speedUpgradeDisplay">Tier 0 / 5</span></p>
+              <p>Cost: <span id="speedUpgradeCostDisplay">1000</span></p>
+              <button id="upgradeSpeedBtn" class="ascii-button">Purchase Speed Upgrade</button>
+            </div>
+
+            <div class="store-item">
+              <h4>🎨 Unlock Ship Color</h4>
+              <p>Cost: <span id="shipColorUnlockCostDisplay">1000</span></p>
+              <button id="unlockShipColorBtn" class="ascii-button">Unlock Ship Color</button>
+            </div>
+
+            <div class="store-item">
+              <h4>✨ Unlock Trail Color</h4>
+              <p>Cost: <span id="trailColorUnlockCostDisplay">1000</span></p>
+              <button id="unlockTrailColorBtn" class="ascii-button">Unlock Trail Color</button>
+            </div>
+
+            <div class="store-item">
+              <h4>🌈 Multi‑Color Trail</h4>
+              <p>Status: <span id="multiColorDisplay">Locked</span></p>
+              <p>Cost: <span id="multiColorCostDisplay">2000</span></p>
+              <button id="upgradeMultiColorBtn" class="ascii-button">Unlock Multi‑Color</button>
+            </div>
+
+            <div class="store-item">
+              <h4>💝 Heart Spawn Rate</h4>
+              <p>Current: <span id="heartChanceDisplay">10%</span></p>
+              <p>Cost: <span id="heartChanceCostDisplay">1500</span></p>
+              <button id="upgradeHeartChanceBtn" class="ascii-button">Upgrade Heart Rate</button>
+            </div>
+
+            <div class="store-item">
+              <h4>🎵 Background Music 2</h4>
+              <p>Status: <span id="background2Display">Locked</span></p>
+              <p>Cost: <span id="background2CostDisplay">1500</span></p>
+              <button id="unlockBackground2Btn" class="ascii-button">Unlock Background 2</button>
+            </div>
+
+            <div class="store-item">
+              <h4>❤️ Base Health</h4>
+              <p>Status: <span id="baseHealthUpgradeDisplay">Tier 0 / 3</span></p>
+              <p>Cost: <span id="baseHealthUpgradeCostDisplay">1000</span></p>
+              <button id="upgradeBaseHealthBtn" class="ascii-button">Purchase Health Upgrade</button>
+            </div>
+
+            <div class="store-item">
+              <h4>📦 Pickup Size</h4>
+              <p>Status: <span id="pickupSizeUpgradeDisplay">Tier 0 / 2</span></p>
+              <p>Cost: <span id="pickupSizeUpgradeCostDisplay">1500</span></p>
+              <button id="upgradePickupSizeBtn" class="ascii-button">Purchase Size Upgrade</button>
+            </div>
+
+            <div class="store-item">
+              <h4>⏱️ Powerup Duration</h4>
+              <p>Status: <span id="powerupDurationUpgradeDisplay">Tier 0 / 3</span></p>
+              <p>Cost: <span id="powerupDurationUpgradeCostDisplay">2000</span></p>
+              <button id="upgradePowerupDurationBtn" class="ascii-button">Purchase Duration Upgrade</button>
+            </div>
           </div>
         </div>
-        <button id="startBtn" class="ascii-button">Start Mission</button>
+
+        <!-- Color Selection Section -->
+        <div class="section" id="colorSelection">
+          <h2>🎨 Customization</h2>
+          <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px;">
+            <h3>Ship Colors</h3>
+            <p id="shipColorLabel">Ship Color: <span id="currentShipColor">Default (#0066cc)</span></p>
+            <div id="shipColorOptions"></div>
+            <h3>Trail Colors</h3>
+            <p id="currentTrailColorLabel">Trail Color: <span id="currentTrailColor">Default (#00ffff)</span></p>
+            <div id="trailColorOptions"></div>
+            <p>(Unlock additional colors in the store.)</p>
+          </div>
+        </div>
+
+        <!-- Background Music Selection Section -->
+        <div class="section" id="bgMusicSelection" style="margin-top: 20px;">
+          <h4>🎵 Background Music</h4>
+          <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
+            <div style="margin-bottom: 10px;">
+              <label style="margin-right: 15px;"><input type="radio" name="bgMusic" value="default" checked /> Track 1</label>
+              <label style="margin-right: 15px;"><input type="radio" name="bgMusic" value="background2" /> Track 2</label>
+              <label><input type="radio" name="bgMusic" value="custom" /> Custom Track</label>
+            </div>
+            <div id="localTrackContainer" style="margin-top: 10px; display: none;">
+              <label for="localTrackInput">Select MP3 File: </label>
+              <input type="file" id="localTrackInput" accept="audio/*" style="margin-top: 5px;" />
+            </div>
+          </div>
+        </div>
+
+        <button id="startBtn" class="ascii-button" style="font-size: 24px; margin-top: 30px; padding: 15px 40px;">
+          🚀 Start Mission
+        </button>
       </div>
     </div>
 
@@ -402,8 +612,10 @@
       // GLOBAL SETTINGS & PERSISTENCE
       // ===============================
       const asciiMode = true;
-      let playerColor = "#0066cc"; // Default ship color
-      let selectedTrailColor = "#00ffff"; // Default trail color
+
+      // Global color variables - move to top with other globals
+      let playerColor = "#0066cc";  // Default ship color
+      let selectedTrailColor = "#00ffff";  // Default trail color
 
       // Expanded color options
       let defaultShipColors = [
@@ -436,16 +648,25 @@
         currency: 0,
         hoseTier: 0,
         speedTier: 0,
+        baseHealthTier: 0,
+        pickupSizeTier: 0,
+        powerupDurationTier: 0,
         unlockedShipColors: ["#0066cc"],
         unlockedTrailColors: ["#00ffff"],
+        selectedShipColor: "#0066cc",
+        selectedTrailColor: "#00ffff",
         multiColorTrailUnlocked: false,
-        heartSpawnChance: 0.1,
+        heartSpawnChance: 0.2,
         highScore: 0,
         background2Unlocked: false,
       };
       let storedData = localStorage.getItem("storeData");
       let storeData = storedData ? JSON.parse(storedData) : {};
       storeData = Object.assign({}, defaultStoreData, storeData);
+
+      // Update color values from stored data
+      playerColor = storeData.selectedShipColor;
+      selectedTrailColor = storeData.selectedTrailColor;
 
       function saveStoreData() {
         localStorage.setItem("storeData", JSON.stringify(storeData));
@@ -457,6 +678,12 @@
       function updateColorOptionsUI() {
         const shipDiv = document.getElementById("shipColorOptions");
         const trailDiv = document.getElementById("trailColorOptions");
+        
+        // Update the current color displays
+        document.getElementById("currentShipColor").textContent = storeData.selectedShipColor;
+        document.getElementById("currentTrailColor").textContent = 
+          storeData.selectedTrailColor === "multicolor" ? "Multi‑Color" : storeData.selectedTrailColor;
+
         shipDiv.innerHTML = "";
         defaultShipColors.forEach((color) => {
           let btn = document.createElement("button");
@@ -464,12 +691,17 @@
           btn.style.background = color;
           btn.setAttribute("data-color", color);
           if (storeData.unlockedShipColors.includes(color)) {
+            if (color === storeData.selectedShipColor) {
+              btn.classList.add("selected");
+            }
             btn.addEventListener("click", () => {
               document
                 .querySelectorAll(".ship-color")
                 .forEach((b) => b.classList.remove("selected"));
               btn.classList.add("selected");
               playerColor = color;
+              storeData.selectedShipColor = color;
+              saveStoreData();
               document.getElementById("currentShipColor").textContent = color;
             });
           } else {
@@ -486,12 +718,17 @@
           btn.style.background = color;
           btn.setAttribute("data-color", color);
           if (storeData.unlockedTrailColors.includes(color)) {
+            if (color === storeData.selectedTrailColor) {
+              btn.classList.add("selected");
+            }
             btn.addEventListener("click", () => {
               document
                 .querySelectorAll(".trail-color")
                 .forEach((b) => b.classList.remove("selected"));
               btn.classList.add("selected");
               selectedTrailColor = color;
+              storeData.selectedTrailColor = color;
+              saveStoreData();
               document.getElementById("currentTrailColor").textContent = color;
             });
           } else {
@@ -500,6 +737,8 @@
           }
           trailDiv.appendChild(btn);
         });
+
+        // Add multicolor button
         let multiBtn = document.createElement("button");
         multiBtn.className = "color-option trail-color";
         multiBtn.style.backgroundImage =
@@ -507,87 +746,165 @@
         multiBtn.setAttribute("data-color", "multicolor");
         multiBtn.textContent = "MC";
         if (storeData.multiColorTrailUnlocked) {
+          if (storeData.selectedTrailColor === "multicolor") {
+            multiBtn.classList.add("selected");
+          }
           multiBtn.addEventListener("click", () => {
             document
               .querySelectorAll(".trail-color")
               .forEach((b) => b.classList.remove("selected"));
             multiBtn.classList.add("selected");
             selectedTrailColor = "multicolor";
-            document.getElementById("currentTrailColor").textContent =
-              "Multi‑Color";
+            storeData.selectedTrailColor = "multicolor";
+            saveStoreData();
+            document.getElementById("currentTrailColor").textContent = "Multi‑Color";
           });
         } else {
           multiBtn.classList.add("disabled");
           multiBtn.title = "Locked: Unlock in store";
         }
         trailDiv.appendChild(multiBtn);
+
+        // Make sure the initial trail color is set correctly
+        selectedTrailColor = storeData.selectedTrailColor;
       }
 
       function updateStoreUI() {
-        currencyDisplay.textContent = storeData.currency;
+        // Add null checks for all DOM elements
+        const currencyDisplay = document.getElementById("currencyDisplay");
+        const hoseUpgradeDisplay = document.getElementById("hoseUpgradeDisplay");
+        const hoseUpgradeCostDisplay = document.getElementById("hoseUpgradeCostDisplay");
+        const speedUpgradeDisplay = document.getElementById("speedUpgradeDisplay");
+        const speedUpgradeCostDisplay = document.getElementById("speedUpgradeCostDisplay");
+        const multiColorDisplay = document.getElementById("multiColorDisplay");
+        const multiColorCostDisplay = document.getElementById("multiColorCostDisplay");
+        const heartChanceDisplay = document.getElementById("heartChanceDisplay");
+        const heartChanceCostDisplay = document.getElementById("heartChanceCostDisplay");
+        const background2Display = document.getElementById("background2Display");
+        const background2CostDisplay = document.getElementById("background2CostDisplay");
+        const baseHealthUpgradeDisplay = document.getElementById("baseHealthUpgradeDisplay");
+        const baseHealthUpgradeCostDisplay = document.getElementById("baseHealthUpgradeCostDisplay");
+        const pickupSizeUpgradeDisplay = document.getElementById("pickupSizeUpgradeDisplay");
+        const pickupSizeUpgradeCostDisplay = document.getElementById("pickupSizeUpgradeCostDisplay");
+        const powerupDurationUpgradeDisplay = document.getElementById("powerupDurationUpgradeDisplay");
+        const powerupDurationUpgradeCostDisplay = document.getElementById("powerupDurationUpgradeCostDisplay");
+        
+        // Get all button references
+        const upgradeHoseBtn = document.getElementById("upgradeHoseBtn");
+        const upgradeSpeedBtn = document.getElementById("upgradeSpeedBtn");
+        const upgradeMultiColorBtn = document.getElementById("upgradeMultiColorBtn");
+        const unlockBackground2Btn = document.getElementById("unlockBackground2Btn");
+        const unlockShipColorBtn = document.getElementById("unlockShipColorBtn");
+        const unlockTrailColorBtn = document.getElementById("unlockTrailColorBtn");
+        const upgradeHeartChanceBtn = document.getElementById("upgradeHeartChanceBtn");
+        const upgradeBaseHealthBtn = document.getElementById("upgradeBaseHealthBtn");
+        const upgradePickupSizeBtn = document.getElementById("upgradePickupSizeBtn");
+        const upgradePowerupDurationBtn = document.getElementById("upgradePowerupDurationBtn");
+        const bgMusic2Label = document.getElementById("bgMusic2Label");
+
+        if (currencyDisplay) currencyDisplay.textContent = storeData.currency;
+        
+        // Hose upgrade
         if (storeData.hoseTier < 5) {
-          hoseUpgradeDisplay.textContent =
-            "Tier " + storeData.hoseTier + " / 5";
-          hoseUpgradeCostDisplay.textContent =
-            500 * Math.pow(2, storeData.hoseTier);
+          if (hoseUpgradeDisplay) hoseUpgradeDisplay.textContent = "Tier " + storeData.hoseTier + " / 5";
+          if (hoseUpgradeCostDisplay) hoseUpgradeCostDisplay.textContent = 500 * Math.pow(2, storeData.hoseTier);
+          if (upgradeHoseBtn) upgradeHoseBtn.style.display = "inline-block";
         } else {
-          hoseUpgradeDisplay.textContent = "Maxed (Tier 5)";
-          hoseUpgradeCostDisplay.textContent = "N/A";
+          if (hoseUpgradeDisplay) hoseUpgradeDisplay.textContent = "Maxed (Tier 5)";
+          if (hoseUpgradeCostDisplay) hoseUpgradeCostDisplay.textContent = "N/A";
+          if (upgradeHoseBtn) upgradeHoseBtn.style.display = "none";
         }
+
+        // Speed upgrade
         if (storeData.speedTier < 5) {
-          speedUpgradeDisplay.textContent =
-            "Tier " + storeData.speedTier + " / 5";
-          speedUpgradeCostDisplay.textContent =
-            1000 * Math.pow(2, storeData.speedTier);
+          if (speedUpgradeDisplay) speedUpgradeDisplay.textContent = "Tier " + storeData.speedTier + " / 5";
+          if (speedUpgradeCostDisplay) speedUpgradeCostDisplay.textContent = 1000 * Math.pow(2, storeData.speedTier);
+          if (upgradeSpeedBtn) upgradeSpeedBtn.style.display = "inline-block";
         } else {
-          speedUpgradeDisplay.textContent = "Maxed (Tier 5)";
-          speedUpgradeCostDisplay.textContent = "N/A";
+          if (speedUpgradeDisplay) speedUpgradeDisplay.textContent = "Maxed (Tier 5)";
+          if (speedUpgradeCostDisplay) speedUpgradeCostDisplay.textContent = "N/A";
+          if (upgradeSpeedBtn) upgradeSpeedBtn.style.display = "none";
         }
-        document.getElementById(
-          "shipColorUnlockCostDisplay"
-        ).textContent = 1000;
-        document.getElementById(
-          "trailColorUnlockCostDisplay"
-        ).textContent = 1000;
-        multiColorDisplay.textContent = storeData.multiColorTrailUnlocked
-          ? "Unlocked"
-          : "Locked";
-        multiColorCostDisplay.textContent = 2000;
-        heartChanceDisplay.textContent =
-          Math.floor(storeData.heartSpawnChance * 100) + "%";
-        heartChanceCostDisplay.textContent = 1500;
-        background2Display.textContent = storeData.background2Unlocked
-          ? "Unlocked"
-          : "Locked";
-        background2CostDisplay.textContent = 1500;
-        if (storeData.background2Unlocked) {
-          document.getElementById("bgMusicSelection").style.display = "block";
-          document.getElementById("bgMusic2Label").style.display = "inline";
+
+        // Base Health upgrade
+        if (storeData.baseHealthTier < 3) {
+          if (baseHealthUpgradeDisplay) baseHealthUpgradeDisplay.textContent = "Tier " + storeData.baseHealthTier + " / 3";
+          if (baseHealthUpgradeCostDisplay) baseHealthUpgradeCostDisplay.textContent = 1000 * Math.pow(2, storeData.baseHealthTier);
+          if (upgradeBaseHealthBtn) upgradeBaseHealthBtn.style.display = "inline-block";
         } else {
-          document.getElementById("bgMusicSelection").style.display = "block";
+          if (baseHealthUpgradeDisplay) baseHealthUpgradeDisplay.textContent = "Maxed (Tier 3)";
+          if (baseHealthUpgradeCostDisplay) baseHealthUpgradeCostDisplay.textContent = "N/A";
+          if (upgradeBaseHealthBtn) upgradeBaseHealthBtn.style.display = "none";
         }
-        document.getElementById("highScoreDisplay").textContent =
-          storeData.highScore;
-        document.getElementById("upgradeHoseBtn").style.display =
-          storeData.hoseTier < 5 ? "inline-block" : "none";
-        document.getElementById("upgradeSpeedBtn").style.display =
-          storeData.speedTier < 5 ? "inline-block" : "none";
-        document.getElementById("unlockShipColorBtn").style.display =
-          defaultShipColors.filter(
-            (c) => !storeData.unlockedShipColors.includes(c)
-          ).length > 0
-            ? "inline-block"
-            : "none";
-        document.getElementById("unlockTrailColorBtn").style.display =
-          defaultTrailColors.filter(
-            (c) => !storeData.unlockedTrailColors.includes(c)
-          ).length > 0
-            ? "inline-block"
-            : "none";
-        document.getElementById("upgradeMultiColorBtn").style.display =
-          !storeData.multiColorTrailUnlocked ? "inline-block" : "none";
-        document.getElementById("unlockBackground2Btn").style.display =
-          !storeData.background2Unlocked ? "inline-block" : "none";
+
+        // Pickup Size upgrade
+        if (storeData.pickupSizeTier < 2) {
+          if (pickupSizeUpgradeDisplay) pickupSizeUpgradeDisplay.textContent = "Tier " + storeData.pickupSizeTier + " / 2";
+          if (pickupSizeUpgradeCostDisplay) pickupSizeUpgradeCostDisplay.textContent = 1500 * Math.pow(2, storeData.pickupSizeTier);
+          if (upgradePickupSizeBtn) upgradePickupSizeBtn.style.display = "inline-block";
+        } else {
+          if (pickupSizeUpgradeDisplay) pickupSizeUpgradeDisplay.textContent = "Maxed (Tier 2)";
+          if (pickupSizeUpgradeCostDisplay) pickupSizeUpgradeCostDisplay.textContent = "N/A";
+          if (upgradePickupSizeBtn) upgradePickupSizeBtn.style.display = "none";
+        }
+
+        // Powerup Duration upgrade
+        if (storeData.powerupDurationTier < 3) {
+          if (powerupDurationUpgradeDisplay) powerupDurationUpgradeDisplay.textContent = "Tier " + storeData.powerupDurationTier + " / 3";
+          if (powerupDurationUpgradeCostDisplay) powerupDurationUpgradeCostDisplay.textContent = 2000 * Math.pow(2, storeData.powerupDurationTier);
+          if (upgradePowerupDurationBtn) upgradePowerupDurationBtn.style.display = "inline-block";
+        } else {
+          if (powerupDurationUpgradeDisplay) powerupDurationUpgradeDisplay.textContent = "Maxed (Tier 3)";
+          if (powerupDurationUpgradeCostDisplay) powerupDurationUpgradeCostDisplay.textContent = "N/A";
+          if (upgradePowerupDurationBtn) upgradePowerupDurationBtn.style.display = "none";
+        }
+
+        // Multi-color trail
+        if (multiColorDisplay) multiColorDisplay.textContent = storeData.multiColorTrailUnlocked ? "Unlocked" : "Locked";
+        if (multiColorCostDisplay) multiColorCostDisplay.textContent = 2000;
+        if (upgradeMultiColorBtn) upgradeMultiColorBtn.style.display = storeData.multiColorTrailUnlocked ? "none" : "inline-block";
+
+        // Heart chance
+        if (heartChanceDisplay) heartChanceDisplay.textContent = Math.floor(storeData.heartSpawnChance * 100) + "%";
+        if (heartChanceCostDisplay) heartChanceCostDisplay.textContent = 1500;
+        if (upgradeHeartChanceBtn) upgradeHeartChanceBtn.style.display = storeData.heartSpawnChance >= 1.0 ? "none" : "inline-block";
+
+        // Background music 2
+        if (background2Display) background2Display.textContent = storeData.background2Unlocked ? "Unlocked" : "Locked";
+        if (background2CostDisplay) background2CostDisplay.textContent = 1500;
+        if (unlockBackground2Btn) unlockBackground2Btn.style.display = storeData.background2Unlocked ? "none" : "inline-block";
+
+        // Ship colors
+        const unlockedAllShipColors = defaultShipColors.every(color => storeData.unlockedShipColors.includes(color));
+        if (unlockShipColorBtn) unlockShipColorBtn.style.display = unlockedAllShipColors ? "none" : "inline-block";
+
+        // Trail colors
+        const unlockedAllTrailColors = defaultTrailColors.every(color => storeData.unlockedTrailColors.includes(color));
+        if (unlockTrailColorBtn) unlockTrailColorBtn.style.display = unlockedAllTrailColors ? "none" : "inline-block";
+
+        // Update high score display
+        const highScoreDisplay = document.getElementById("highScoreDisplay");
+        if (highScoreDisplay) highScoreDisplay.textContent = storeData.highScore;
+
+        // Show/hide background music 2 radio button based on unlock status
+        if (bgMusic2Label) {
+          bgMusic2Label.style.display = storeData.background2Unlocked ? "inline" : "none";
+        }
+      }
+
+      // Move the music selection section to after powerup duration upgrade
+      const musicSection = document.getElementById("bgMusicSelection");
+      const localTrackContainer = document.getElementById("localTrackContainer");
+      const powerupDurationSection = document.querySelector('.store-item:has(#powerupDurationUpgradeDisplay)');
+      
+      if (musicSection && powerupDurationSection) {
+        // Remove the music sections from their current position
+        musicSection.parentNode.removeChild(musicSection);
+        localTrackContainer.parentNode.removeChild(localTrackContainer);
+        
+        // Insert them after the powerup duration section
+        powerupDurationSection.insertAdjacentElement('afterend', musicSection);
+        musicSection.insertAdjacentElement('afterend', localTrackContainer);
       }
 
       // ===============================
@@ -650,48 +967,72 @@
         fireWhooshSound;
       let audioCtx, analyser;
       function initAudio() {
-        backgroundMusic = new Audio("sounds/background.mp3");
-        backgroundMusic.loop = true;
-        backgroundMusic.volume = 0.5;
-        waterSplashSound = new Audio("sounds/water-splash.mp3");
-        laserSound = new Audio("sounds/laser.mp3");
-        explosionSound = new Audio("sounds/explosion.mp3");
-        powerupSound = new Audio("sounds/powerup.mp3");
-        extinguishSound = new Audio("sounds/extinguish.mp3");
-        fireWhooshSound = new Audio("sounds/fire-whoosh.mp3");
-        fireWhooshSound.loop = false;
+        if (!backgroundMusic) {
+          try {
+            backgroundMusic = new Audio("sounds/background.mp3");
+            backgroundMusic.loop = true;
+            backgroundMusic.volume = 0.5;
+            waterSplashSound = new Audio("sounds/water-splash.mp3");
+            laserSound = new Audio("sounds/laser.mp3");
+            explosionSound = new Audio("sounds/explosion.mp3");
+            powerupSound = new Audio("sounds/powerup.mp3");
+            extinguishSound = new Audio("sounds/extinguish.mp3");
+            fireWhooshSound = new Audio("sounds/fire-whoosh.mp3");
+            fireWhooshSound.loop = false;
 
-        try {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 256;
-          const sourceNode = audioCtx.createMediaElementSource(backgroundMusic);
-          sourceNode.connect(analyser);
-          analyser.connect(audioCtx.destination);
-        } catch (e) {
-          console.log("Web Audio API not supported.");
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            const sourceNode = audioCtx.createMediaElementSource(backgroundMusic);
+            sourceNode.connect(analyser);
+            analyser.connect(audioCtx.destination);
+          } catch (e) {
+            console.log("Web Audio API not supported or initialization failed:", e);
+          }
         }
       }
 
       // ===============================
       // GAME VARIABLES & TIMERS
       // ===============================
-      let score = 0,
-        comboCount = 0,
-        comboTimer = 0;
+      // Level progression variables
+      let score = 0;  // Overall score
+      let currentLevelScore = 0;  // Score for current level only
+      let comboCount = 0;
+      let comboTimer = 0;
       const comboResetTime = 2000;
-      let gameSpeed = 1,
-        gameOver = false,
-        lastTime = 0;
-      let bubbleTimer = 0,
-        bubbleInterval = 1000; // 3x as frequent as before
-      let obstacleTimer = 0,
-        obstacleInterval = 3000;
-      let boostTimer = 7000,
-        boostInterval = 7000;
-      let level = 1,
-        laserActive = false;
+      let gameSpeed = 1;
+      let gameOver = false;
+      let lastTime = 0;
+      let bubbleTimer = 0;
+      let bubbleInterval = 1000;
+      let obstacleTimer = 0;
+      let obstacleInterval = 3000;
+      let boostTimer = 7000;
+      let boostInterval = 7000;
+      let laserActive = false;
+
+      // Define different score thresholds for each level
+      const LEVEL_SCORE_THRESHOLDS = {
+        1: 1000,  // Level 1 needs 1000 points
+        2: 2000,  // Level 2 needs 2000 points
+        3: 3000   // Level 3 needs 3000 points
+      };
+
+      // Define base speeds for each level
+      const LEVEL_SPEEDS = {
+        1: 1.0,    // Base speed
+        2: 1.5,    // 50% faster
+        3: 2.0     // 100% faster
+      };
+
+      let currentLevel = 1;
+      const MAX_LEVELS = 3;
+      let player = null;
       let notifications = [];
+      let isPaused = false;
+      let levelTransitionActive = false;
+      let bossSpawned = false;
       const keys = {};
 
       // Mobile control variables
@@ -814,7 +1155,7 @@
         }
         draw() {
           if (asciiMode) {
-            ctx.fillStyle = "#001f3f";
+            ctx.fillStyle = "#001224";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
           }
         }
@@ -853,7 +1194,6 @@
 
       class Player {
         constructor() {
-          // Ensure player starts to the right of the city line
           this.x = Math.max(150, city.width);
           this.y = canvas.height / 2 - 48;
           this.baseSpeed = 5 + storeData.speedTier;
@@ -866,24 +1206,20 @@
           this.invisibilityTime = 0;
           this.shieldTime = 0;
           this.electricHoseTime = 0;
+          this.lifeShieldActive = false;  // New property for life shield
           this.artWidth = 96;
           this.artHeight = 96;
-          this.lives = 3;
-          // Set a base movement speed (e.g., 4) and apply upgrades from storeData.
+          this.lives = 3 + storeData.baseHealthTier; // Base health affected by upgrade
+          this.maxLives = 3 + storeData.baseHealthTier;
           this.baseMovementSpeed = 4;
-          this.movementSpeed =
-            this.baseMovementSpeed * (1 + storeData.speedTier * 0.1);
+          this.movementSpeed = this.baseMovementSpeed * (1 + storeData.speedTier * 0.1);
         }
         draw() {
           if (asciiMode) {
             spawnPlayerTrail(this.x, this.y, this.artWidth, this.artHeight);
-            drawAsciiArt(
-              rotatedPlayerArt,
-              this.x,
-              this.y,
-              playerFontSize,
-              playerColor
-            );
+            drawAsciiArt(rotatedPlayerArt, this.x, this.y, playerFontSize, playerColor);
+            
+            // Draw regular shield if active
             if (this.shieldTime > 0) {
               let centerX = this.x + this.artWidth / 2;
               let centerY = this.y + this.artHeight / 2;
@@ -896,6 +1232,22 @@
                 ctx.font = "16px monospace";
                 ctx.fillStyle = "#00ffff";
                 ctx.fillText("*", starX, starY);
+              }
+            }
+            
+            // Draw life shield if active (different visual effect)
+            if (this.lifeShieldActive) {
+              let centerX = this.x + this.artWidth / 2;
+              let centerY = this.y + this.artHeight / 2;
+              let shieldRadius = this.artWidth * 1.2;
+              let numHearts = 8;
+              for (let i = 0; i < numHearts; i++) {
+                let angle = shieldRotation + (i * 2 * Math.PI) / numHearts;
+                let heartX = centerX + shieldRadius * Math.cos(angle);
+                let heartY = centerY + shieldRadius * Math.sin(angle);
+                ctx.font = "16px monospace";
+                ctx.fillStyle = "#ff69b4";
+                ctx.fillText("♥", heartX, heartY);
               }
             }
           }
@@ -934,7 +1286,6 @@
         }
       }
 
-      let player = new Player();
 
       class WaterProjectile {
         constructor(x, y, enhanced = false) {
@@ -945,7 +1296,12 @@
         }
         draw() {
           ctx.font = "16px monospace";
-          ctx.fillStyle = this.enhanced ? "yellow" : "blue";
+          // Change color based on electric hose instead of enhanced status
+          if (player.electricHoseTime > 0) {
+            ctx.fillStyle = "#66ccff"; // Electric blue for electric hose
+          } else {
+            ctx.fillStyle = "#0066ff"; // Regular blue for normal water
+          }
           ctx.fillText("~", this.x, this.y);
         }
         update() {
@@ -958,7 +1314,10 @@
         constructor(type = "normal") {
           this.type = type;
           this.x = canvas.width + 20;
-          this.y = Math.random() * (canvas.height - 60);
+          // Add 50px margin at top and bottom
+          const minY = 50;
+          const maxY = canvas.height - 110; // 60px original margin + 50px extra
+          this.y = minY + Math.random() * (maxY - minY);
           this.speed = gameSpeed + Math.random() * 2;
         }
         draw() {
@@ -996,12 +1355,14 @@
 
       // All pickup icons drawn at 2x their original size:
       function drawRotatingGlowingText(ctx, text, x, y, font, baseColor, rotation) {
-        // Use a pulsing glow intensity based on time
+        // Scale font size based on pickup size tier
+        const pickupSizes = [20, 30, 40]; // Base size increases with tier
+        const fontSize = pickupSizes[storeData.pickupSizeTier || 0];
         const pulse = 10 + 5 * Math.abs(Math.sin(Date.now() / 200));
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(rotation);
-        ctx.font = font;
+        ctx.font = `${fontSize}px monospace`;
         ctx.fillStyle = baseColor;
         ctx.shadowColor = baseColor;
         ctx.shadowBlur = pulse;
@@ -1014,16 +1375,15 @@
           this.x = canvas.width + 30;
           this.y = Math.random() * (canvas.height - 30);
           this.speed = gameSpeed;
-          this.rotation = 0; // initialize rotation
+          this.rotation = 0;
         }
         update(deltaTime) {
           this.x -= this.speed;
-          this.rotation += deltaTime * 0.005; // update rotation
+          this.rotation += deltaTime * 0.005;
           this.draw();
         }
         draw() {
-          // Draw "B" with rotation and pulsing glow.
-          drawRotatingGlowingText(ctx, "B", this.x, this.y, "20px monospace", "#ffcc00", this.rotation);
+          drawRotatingGlowingText(ctx, "🚀", this.x, this.y, "20px monospace", "#ffcc00", this.rotation);
         }
       }
       class HoseUpgradePickup {
@@ -1031,16 +1391,15 @@
           this.x = canvas.width + 30;
           this.y = Math.random() * (canvas.height - 30);
           this.speed = gameSpeed;
-          this.rotation = 0; // initialize rotation
+          this.rotation = 0;
         }
         update(deltaTime) {
           this.x -= this.speed;
-          this.rotation += deltaTime * 0.005; // update rotation
+          this.rotation += deltaTime * 0.005;
           this.draw();
         }
         draw() {
-          // Draw "H" with rotation and pulsing glow.
-          drawRotatingGlowingText(ctx, "H", this.x, this.y, "20px monospace", "#00ff00", this.rotation);
+          drawRotatingGlowingText(ctx, "💧", this.x, this.y, "20px monospace", "#00ff00", this.rotation);
         }
       }
       class LaserWeaponPickup {
@@ -1048,16 +1407,15 @@
           this.x = canvas.width + 30;
           this.y = Math.random() * (canvas.height - 30);
           this.speed = gameSpeed;
-          this.rotation = 0; // initialize rotation
+          this.rotation = 0;
         }
         update(deltaTime) {
           this.x -= this.speed;
-          this.rotation += deltaTime * 0.005; // update rotation
+          this.rotation += deltaTime * 0.005;
           this.draw();
         }
         draw() {
-          // Draw "L" with rotation and pulsing glow.
-          drawRotatingGlowingText(ctx, "L", this.x, this.y, "20px monospace", "#66ccff", this.rotation);
+          drawRotatingGlowingText(ctx, "🔫", this.x, this.y, "20px monospace", "#66ccff", this.rotation);
         }
       }
       class ShieldPickup {
@@ -1065,16 +1423,15 @@
           this.x = canvas.width + 30;
           this.y = Math.random() * (canvas.height - 30);
           this.speed = gameSpeed;
-          this.rotation = 0; // initialize rotation
+          this.rotation = 0;
         }
         update(deltaTime) {
           this.x -= this.speed;
-          this.rotation += deltaTime * 0.005; // update rotation
+          this.rotation += deltaTime * 0.005;
           this.draw();
         }
         draw() {
-          // Draw "S" with rotation and pulsing glow.
-          drawRotatingGlowingText(ctx, "S", this.x, this.y, "20px monospace", "#ff66cc", this.rotation);
+          drawRotatingGlowingText(ctx, "🛡️", this.x, this.y, "20px monospace", "#ff66cc", this.rotation);
         }
       }
       class CityHealthPickup {
@@ -1099,18 +1456,166 @@
           this.x = canvas.width + 30;
           this.y = Math.random() * (canvas.height - 30);
           this.speed = gameSpeed;
-          this.rotation = 0; // initialize rotation
+          this.rotation = 0;
         }
         update(deltaTime) {
           this.x -= this.speed;
-          this.rotation += deltaTime * 0.005; // update rotation
+          this.rotation += deltaTime * 0.005;
           this.draw();
         }
         draw() {
-          // Draw "⚡" with rotation and pulsing glow.
           drawRotatingGlowingText(ctx, "⚡", this.x, this.y, "20px monospace", "#ffff00", this.rotation);
         }
       }
+
+      // New electric sound for electrical fires
+      const electricSound = new Audio("sounds/electric.mp3");
+
+      // Modify powerup font sizes in ASCII Art
+      const boostFontSize = 10; // Half original size
+      const heartAndElectricFontSize = 40; // Double original size
+
+ 
+
+      // Boss definitions
+      const bosses = {
+        1: {
+          art: [
+            "   ╔═══╗   ",
+            "   ║B-1║   ",
+            " ╔═╝███╚═╗ ",
+            " ╚═[===]═╝ "
+          ],
+          health: 100,
+          pattern: "linear"
+        },
+        2: {
+          art: [
+            " ╔═╗ ╔═╗ ",
+            " ║B║~║2║ ",
+            "╔╝█╚═╝█╚╗",
+            "╚════════╝"
+          ],
+          health: 150,
+          pattern: "sine"
+        },
+        3: {
+          art: [
+            "  ▄███▄  ",
+            "╔═║-B3-║═╗",
+            "╚═███████═╝",
+            " ▀█████▀ "
+          ],
+          health: 200,
+          pattern: "spiral"
+        }
+      };
+
+      // New powerup: Bomb
+      class BombPickup {
+        constructor() {
+          this.x = canvas.width + 30;
+          this.y = Math.random() * (canvas.height - 30);
+          this.speed = gameSpeed;
+          this.rotation = 0;
+        }
+        update(deltaTime) {
+          this.x -= this.speed;
+          this.rotation += deltaTime * 0.005;
+          this.draw();
+        }
+        draw() {
+          drawRotatingGlowingText(ctx, "💣", this.x, this.y, "20px monospace", "#ff0000", this.rotation);
+        }
+        activate() {
+          // Clear all fire bubbles with explosion effect
+          fireBubbles.forEach(fire => {
+            spawnParticles(fire.x, fire.y, "255,0,0", 20);
+            addScore(10);  // Use addScore instead of direct score modification
+            storeData.currency += 5;
+          });
+          fireBubbles = [];
+          addNotification("💣 BOOM! All fires cleared!");
+          explosionSound.currentTime = 0;
+          explosionSound.play();
+        }
+      }
+
+      // New powerup: Life Shield
+      class LifeShieldPickup {
+        constructor() {
+          this.x = canvas.width + 30;
+          this.y = Math.random() * (canvas.height - 30);
+          this.speed = gameSpeed;
+          this.rotation = 0;
+        }
+        update(deltaTime) {
+          this.x -= this.speed;
+          this.rotation += deltaTime * 0.005;
+          this.draw();
+        }
+        draw() {
+          drawRotatingGlowingText(ctx, "🌟", this.x, this.y, "20px monospace", "#ffd700", this.rotation);
+        }
+      }
+
+      // Level completion modal
+      function showLevelModal(level) {
+        // Remove any existing level modals to prevent duplicates
+        document.querySelectorAll('.level-modal').forEach(modal => modal.remove());
+        isPaused = true;
+        levelTransitionActive = true;
+        
+        const modal = document.createElement('div');
+        modal.className = 'level-modal';
+        
+        let content = '';
+        if (level === 2) {
+          content = `
+            <h2>Level 2 Unlocked!</h2>
+            <p>New Features:<br>
+            - Rotating fire patterns<br>
+            - Bomb powerup (💣) clears all visible fires<br>
+            - Increased difficulty</p>
+          `;
+        } else if (level === 3) {
+          content = `
+            <h2>Level 3 Unlocked!</h2>
+            <p>New Features:<br>
+            - Complex fire movement patterns<br>
+            - Life Shield powerup (🌟) restores ship health<br>
+            - Maximum difficulty</p>
+          `;
+        }
+
+        modal.innerHTML = `
+          ${content}
+          <button onclick="resumeAfterLevelTransition(this)">Continue</button>
+        `;
+
+        document.body.appendChild(modal);
+      }
+
+      // Add this new function to handle level transition resume
+      function resumeAfterLevelTransition(buttonElement) {
+        isPaused = false;
+        levelTransitionActive = false;
+        buttonElement.parentElement.remove();
+      }
+
+      // Modify UI to show level progress
+      const levelDisplay = document.createElement('div');
+      levelDisplay.style.cssText = `
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #fff;
+        font-family: monospace;
+        font-size: 20px;
+        z-index: 10;
+      `;
+      document.body.appendChild(levelDisplay);
 
       let boostPickups = [];
       let hoseUpgrades = [];
@@ -1118,6 +1623,9 @@
       let shieldPickups = [];
       let cityHealthPickups = [];
       let electricHosePickups = [];
+      let bombPickups = [];
+      let lifeShieldPickups = [];
+      let playerHealthPickups = []; // New array
 
       let waterProjectiles = [];
       let fireBubbles = [];
@@ -1386,15 +1894,25 @@
       }
       function rectCollision(r1, r2) {
         if (player.invisibilityTime > 0) return false;
+        const pickupSizes = [30, 45, 60]; // Size increases with tier
+        const pickupSize = pickupSizes[storeData.pickupSizeTier];
         return (
-          r1.x < r2.x + 30 &&
+          r1.x < r2.x + pickupSize &&
           r1.x + player.artWidth > r2.x &&
-          r1.y < r2.y + 30 &&
+          r1.y < r2.y + pickupSize &&
           r1.y + player.artHeight > r2.y
         );
       }
 
       function addNotification(message) {
+        // Replace text descriptions with emojis in notifications
+        message = message.replace("Speed Boost", "🚀 Speed Boost")
+          .replace("Hose Upgrade", "💧 Hose Upgrade")
+          .replace("Laser Weapon", "🔫 Laser Weapon")
+          .replace("Shield", "🛡️ Shield")
+          .replace("Electric Hose", "⚡ Electric Hose")
+          .replace("City Repaired", "♥️ City Repaired");
+        
         notifications.push({ message: message, timer: 2000 });
         if (message.includes("Acquired")) {
           powerupSound.currentTime = 0;
@@ -1484,18 +2002,56 @@
         background.speed = gameSpeed / 2;
         background.update();
 
-        // Draw music visualizer bubbles in the background (drawn once here)
         drawMusicVisualizerBubbles();
-
-        // Draw the ASCII city silhouette (covers the left black rectangle)
         drawAsciiCity();
-
         city.update(deltaTime);
 
-        if (!gameOver) {
-          if (score > level * 100) {
-            level++;
+        // Always update and draw the level display
+        levelDisplay.textContent = `Level: ${currentLevel}/${MAX_LEVELS}`;
+
+        if (!gameOver && !isPaused) {
+          const levelThreshold = LEVEL_SCORE_THRESHOLDS[currentLevel] || 1000;
+          // Update level display to show progress towards boss
+          levelDisplay.textContent = `Level: ${currentLevel}/${MAX_LEVELS} (${currentLevelScore}/${levelThreshold} to boss)`;
+          
+          // Handle boss battle - add null check before accessing properties
+          if (currentBoss && currentBoss.isActive) {
+            currentBoss.update(deltaTime);
+            currentBoss.draw();
+
+            // Check for water projectile hits on boss
+            for (let i = waterProjectiles.length - 1; i >= 0; i--) {
+              let proj = waterProjectiles[i];
+              if (currentBoss && // Add additional null check
+                  proj.x >= currentBoss.x && 
+                  proj.x <= currentBoss.x + 100 && 
+                  proj.y >= currentBoss.y && 
+                  proj.y <= currentBoss.y + 80) {
+                currentBoss.hit(proj.enhanced ? 2 : 1);
+                spawnParticles(proj.x, proj.y, "255,255,255", 5);
+                waterProjectiles.splice(i, 1);
+              }
+            }
+
+            // Check for laser hits on boss
+            if (laserActive && player.laserWeaponTime > 0 && currentBoss) { // Add null check
+              const center = player.center();
+              if (center.cy >= currentBoss.y && center.cy <= currentBoss.y + 80) {
+                currentBoss.hit(0.5);
+                spawnParticles(currentBoss.x, center.cy, "255,0,0", 2);
+              }
+            }
           }
+
+          // Adjust difficulty based on level
+          const baseSpeed = LEVEL_SPEEDS[currentLevel] || 1.0;
+          gameSpeed = baseSpeed + (currentLevelScore / levelThreshold * 0.5); // Gradual speed increase within level
+          gameSpeed = Math.min(gameSpeed, baseSpeed * 1.5); // Cap at 50% above base speed
+
+          // Update intervals based on level speed
+          bubbleInterval = Math.max(300, 1000 / baseSpeed);
+          obstacleInterval = Math.max(1000, 3000 / baseSpeed);
+
           let targetDx = 0,
             targetDy = 0;
           if (keys["ArrowLeft"] || keys["a"]) targetDx = -player.movementSpeed;
@@ -1585,7 +2141,7 @@
                 fireBubbles.splice(j, 1);
                 comboCount = comboTimer > 0 ? comboCount + 1 : 1;
                 comboTimer = comboResetTime;
-                score += 5 * comboCount;
+                addScore(5 * comboCount);  // Use addScore instead of direct score modification
                 storeData.currency += 10;
                 saveStoreData();
               }
@@ -1613,8 +2169,13 @@
               if (fire.type === "electrical" && player.electricHoseTime <= 0)
                 continue;
               if (circleCollision(proj, fire)) {
-                extinguishSound.currentTime = 0;
-                extinguishSound.play();
+                if (fire.type === "electrical") {
+                  electricSound.currentTime = 0;
+                  electricSound.play();
+                } else {
+                  extinguishSound.currentTime = 0;
+                  extinguishSound.play();
+                }
                 spawnParticles(fire.x, fire.y, "255,150,0", 30);
                 scorePopups.push(
                   new ScorePopup(fire.x, fire.y, 5 * (comboCount || 1))
@@ -1622,8 +2183,7 @@
                 fireBubbles.splice(j, 1);
                 comboCount = comboTimer > 0 ? comboCount + 1 : 1;
                 comboTimer = comboResetTime;
-                score += 5 * comboCount;
-                waterProjectiles.splice(i, 1);
+                addScore(5 * comboCount);  // Use addScore instead of direct score modification
                 storeData.currency += 10;
                 saveStoreData();
                 break;
@@ -1654,8 +2214,10 @@
                 spawnParticles(fire.x, fire.y, "0,255,255", 40);
                 scorePopups.push(new ScorePopup(fire.x, fire.y, 10));
                 fireBubbles.splice(i, 1);
-                score += 10;
+                addScore(10);  // Use addScore instead of direct score modification
                 storeData.currency += 10;
+                electricSound.currentTime = 0;
+                electricSound.play();
                 addNotification("Electrical fire extinguished!");
                 continue;
               }
@@ -1686,6 +2248,10 @@
                 player.shieldTime = 0;
                 addNotification("Shield absorbed the hit!");
                 obstacles.splice(i, 1);
+              } else if (player.lifeShieldActive) {
+                player.lifeShieldActive = false;
+                addNotification("Life Shield protected you!");
+                obstacles.splice(i, 1);
               } else {
                 player.lives--;
                 let center = player.center();
@@ -1712,18 +2278,41 @@
           boostTimer += deltaTime;
           if (boostTimer > boostInterval) {
             let rnd = Math.random();
-            if (rnd < 0.2) {
-              boostPickups.push(new BoostPickup());
-            } else if (rnd < 0.35) {
-              hoseUpgrades.push(new HoseUpgradePickup());
-            } else if (rnd < 0.5) {
-              laserPickups.push(new LaserWeaponPickup());
-            } else if (rnd < 0.65) {
-              shieldPickups.push(new ShieldPickup());
-            } else if (rnd < 0.8) {
-              electricHosePickups.push(new ElectricHosePickup());
-            } else if (rnd < 0.8 + storeData.heartSpawnChance) {
-              cityHealthPickups.push(new CityHealthPickup());
+            
+            // First, check for heart spawns with a higher base chance (30%)
+            if (rnd < 0.3) {
+              // Heart pickup spawn logic with upgraded chance and guaranteed minimum
+              if (Math.random() < Math.max(storeData.heartSpawnChance, 0.2)) {
+                // Alternate between city and player health pickups with 50/50 chance
+                if (Math.random() < 0.5) {
+                  cityHealthPickups.push(new CityHealthPickup());
+                } else {
+                  playerHealthPickups.push(new PlayerHealthPickup());
+                }
+              }
+            }
+            // Then distribute other powerups in remaining 70%
+            else {
+              rnd = (rnd - 0.3) / 0.7; // Normalize remaining probability space
+              if (rnd < 0.2) {
+                boostPickups.push(new BoostPickup());
+              } else if (rnd < 0.4) {
+                hoseUpgrades.push(new HoseUpgradePickup());
+              } else if (rnd < 0.6) {
+                laserPickups.push(new LaserWeaponPickup());
+              } else if (rnd < 0.7) {
+                shieldPickups.push(new ShieldPickup());
+              } else if (rnd < 0.8) {
+                electricHosePickups.push(new ElectricHosePickup());
+              } else if (rnd < 0.9) {
+                if (currentLevel >= 2) {
+                  bombPickups.push(new BombPickup());
+                }
+              } else {
+                if (currentLevel >= 3) {
+                  lifeShieldPickups.push(new LifeShieldPickup());
+                }
+              }
             }
             boostTimer = 0;
           }
@@ -1731,7 +2320,7 @@
             let boost = boostPickups[i];
             boost.update(deltaTime);
             if (rectCollision(player, boost)) {
-              player.boostTime = 5000;
+              player.boostTime = getPowerupDuration();
               player.speed = player.baseSpeed * 1.5;
               boostPickups.splice(i, 1);
               addNotification("Speed Boost Acquired!");
@@ -1743,7 +2332,7 @@
             let pickup = hoseUpgrades[i];
             pickup.update(deltaTime);
             if (rectCollision(player, pickup)) {
-              player.hoseUpgradeTime = 5000;
+              player.hoseUpgradeTime = getPowerupDuration();
               hoseUpgrades.splice(i, 1);
               addNotification("Hose Upgrade Acquired!");
             } else if (pickup.x < 0) {
@@ -1754,7 +2343,7 @@
             let pickup = laserPickups[i];
             pickup.update(deltaTime);
             if (rectCollision(player, pickup)) {
-              player.laserWeaponTime = 5000;
+              player.laserWeaponTime = getPowerupDuration();
               laserPickups.splice(i, 1);
               addNotification("Laser Weapon Acquired!");
             } else if (pickup.x < 0) {
@@ -1765,7 +2354,7 @@
             let pickup = shieldPickups[i];
             pickup.update(deltaTime);
             if (rectCollision(player, pickup)) {
-              player.shieldTime = 5000;
+              player.shieldTime = getPowerupDuration();
               shieldPickups.splice(i, 1);
               addNotification("Shield Acquired!");
             } else if (pickup.x < 0) {
@@ -1776,7 +2365,7 @@
             let pickup = electricHosePickups[i];
             pickup.update(deltaTime);
             if (rectCollision(player, pickup)) {
-              player.electricHoseTime = 5000;
+              player.electricHoseTime = getPowerupDuration();
               electricHosePickups.splice(i, 1);
               addNotification("Electric Hose Acquired!");
             } else if (pickup.x < 0) {
@@ -1787,14 +2376,63 @@
             let pickup = cityHealthPickups[i];
             pickup.update(deltaTime);
             if (rectCollision(player, pickup)) {
-              city.health = Math.min(city.maxHealth, city.health + 20);
+              // Only collect if city health is not full
+              if (city.health < city.maxHealth) {
+                city.health = Math.min(city.maxHealth, city.health + 20);
+                addNotification("City Repaired! 🏰");
+                spawnParticles(100, canvas.height / 2, "0,255,0", 200);
+                addScore(50);  // Add points for repairing the city
+                storeData.currency += 50;
+                saveStoreData();
+              } else {
+                addNotification("City health already full!");
+              }
               cityHealthPickups.splice(i, 1);
-              addNotification("City Repaired!");
-              spawnParticles(100, canvas.height / 2, "0,255,0", 200);
-              storeData.currency += 50;
-              saveStoreData();
             } else if (pickup.x < 0) {
               cityHealthPickups.splice(i, 1);
+            }
+          }
+          for (let i = lifeShieldPickups.length - 1; i >= 0; i--) {
+            let pickup = lifeShieldPickups[i];
+            pickup.update(deltaTime);
+            if (rectCollision(player, pickup)) {
+              player.lifeShieldActive = true;
+              player.lives = Math.min(player.lives + 1, 5); // Increase lives up to max of 5
+              lifeShieldPickups.splice(i, 1);
+              addNotification("Life Shield Acquired! +1 Life!");
+              spawnParticles(player.x, player.y, "255,105,180", 50); // Pink particles
+            } else if (pickup.x < 0) {
+              lifeShieldPickups.splice(i, 1);
+            }
+          }
+          for (let i = playerHealthPickups.length - 1; i >= 0; i--) {
+            let pickup = playerHealthPickups[i];
+            pickup.update(deltaTime);
+            if (rectCollision(player, pickup)) {
+              // Only collect if health is not full
+              if (player.lives < player.maxLives) {
+                player.lives = Math.min(player.lives + 1, player.maxLives);
+                addNotification("Extra Life Acquired! 💝");
+                spawnParticles(player.x, player.y, "255,20,147", 50); // Deep pink particles
+              } else {
+                addNotification("Health already full!");
+              }
+              playerHealthPickups.splice(i, 1);
+            } else if (pickup.x < 0) {
+              playerHealthPickups.splice(i, 1);
+            }
+          }
+
+          // Add bomb pickup collision check
+          for (let i = bombPickups.length - 1; i >= 0; i--) {
+            let pickup = bombPickups[i];
+            pickup.update(deltaTime);
+            if (rectCollision(player, pickup)) {
+              pickup.activate();
+              bombPickups.splice(i, 1);
+              spawnParticles(player.x, player.y, "255,0,0", 100);
+            } else if (pickup.x < 0) {
+              bombPickups.splice(i, 1);
             }
           }
         }
@@ -1818,23 +2456,23 @@
 
         powerupTimersEl.textContent =
           (player.boostTime > 0
-            ? "Speed: " + (player.boostTime / 1000).toFixed(1) + "s "
+            ? "🚀: " + (player.boostTime / 1000).toFixed(1) + "s "
             : "") +
           (player.hoseUpgradeTime > 0
-            ? "Hose: " + (player.hoseUpgradeTime / 1000).toFixed(1) + "s "
+            ? "💧: " + (player.hoseUpgradeTime / 1000).toFixed(1) + "s "
             : "") +
           (player.laserWeaponTime > 0
-            ? "Laser: " + (player.laserWeaponTime / 1000).toFixed(1) + "s "
+            ? "🔫: " + (player.laserWeaponTime / 1000).toFixed(1) + "s "
             : "") +
           (player.shieldTime > 0
-            ? "Shield: " + (player.shieldTime / 1000).toFixed(1) + "s "
+            ? "🛡️: " + (player.shieldTime / 1000).toFixed(1) + "s "
             : "") +
           (player.electricHoseTime > 0
-            ? "Electric: " + (player.electricHoseTime / 1000).toFixed(1) + "s"
+            ? "⚡: " + (player.electricHoseTime / 1000).toFixed(1) + "s"
             : "");
 
         cityHealthEl.textContent = city.health + "/" + city.maxHealth;
-        shipHealthEl.textContent = player.lives + "/3";
+        shipHealthEl.textContent = player.lives + "/" + player.maxLives;
 
         let healthRatio = city.health / city.maxHealth;
         cityHealthBar.style.width = healthRatio * 100 + "%";
@@ -1874,19 +2512,15 @@
         // Update the top-right Upgrade Timer UI with all active upgrades
         let timersText = "";
         if (player.boostTime > 0)
-          timersText += "Speed: " + (player.boostTime / 1000).toFixed(1) + "s ";
+          timersText += "🚀: " + (player.boostTime / 1000).toFixed(1) + "s ";
         if (player.hoseUpgradeTime > 0)
-          timersText +=
-            "Hose: " + (player.hoseUpgradeTime / 1000).toFixed(1) + "s ";
+          timersText += "💧: " + (player.hoseUpgradeTime / 1000).toFixed(1) + "s ";
         if (player.laserWeaponTime > 0)
-          timersText +=
-            "Laser: " + (player.laserWeaponTime / 1000).toFixed(1) + "s ";
+          timersText += "🔫: " + (player.laserWeaponTime / 1000).toFixed(1) + "s ";
         if (player.shieldTime > 0)
-          timersText +=
-            "Shield: " + (player.shieldTime / 1000).toFixed(1) + "s ";
+          timersText += "🛡️: " + (player.shieldTime / 1000).toFixed(1) + "s ";
         if (player.electricHoseTime > 0)
-          timersText +=
-            "Electric: " + (player.electricHoseTime / 1000).toFixed(1) + "s ";
+          timersText += "⚡: " + (player.electricHoseTime / 1000).toFixed(1) + "s ";
         boostTimerUI.textContent = "Upgrades: " + (timersText || "None");
 
         animationId = requestAnimationFrame(animate);
@@ -2010,7 +2644,8 @@
         .addEventListener("click", () => {
           if (storeData.currency >= 1500) {
             storeData.currency -= 1500;
-            storeData.heartSpawnChance += 0.05;
+            // Cap at 100%
+            storeData.heartSpawnChance = Math.min(storeData.heartSpawnChance + 0.05, 1.0);
             saveStoreData();
             updateStoreUI();
             addNotification("Heart Spawn Rate Upgraded!");
@@ -2035,29 +2670,34 @@
 
       document.getElementsByName("bgMusic").forEach((radio) => {
         radio.addEventListener("change", (e) => {
+          const localTrackContainer = document.getElementById("localTrackContainer");
           if (e.target.value === "default") {
             backgroundMusic.src = "sounds/background.mp3";
+            localTrackContainer.style.display = "none";
+            backgroundMusic.play();
           } else if (e.target.value === "background2") {
             backgroundMusic.src = "sounds/background2.mp3";
+            localTrackContainer.style.display = "none";
+            backgroundMusic.play();
+          } else if (e.target.value === "custom") {
+            localTrackContainer.style.display = "block";
           }
-          backgroundMusic.play();
         });
       });
 
-      document
-        .getElementById("localTrackInput")
-        .addEventListener("change", function (e) {
-          const file = e.target.files[0];
-          if (file) {
-            const objectUrl = URL.createObjectURL(file);
-            backgroundMusic.src = objectUrl;
-            backgroundMusic.load();
-            if (audioCtx && audioCtx.state === "suspended") {
-              audioCtx.resume();
-            }
-            addNotification("Local track selected!");
+      document.getElementById("localTrackInput").addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const objectUrl = URL.createObjectURL(file);
+          backgroundMusic.src = objectUrl;
+          backgroundMusic.load();
+          if (audioCtx && audioCtx.state === "suspended") {
+            audioCtx.resume();
           }
-        });
+          backgroundMusic.play();
+          addNotification("Custom track loaded!");
+        }
+      });
 
       startBtn.addEventListener("click", () => {
         tutorialEl.style.display = "none";
@@ -2083,9 +2723,10 @@
         score = 0;
         comboCount = 0;
         comboTimer = 0;
-        gameSpeed = 2;
+        gameSpeed = 1;
         gameOver = false;
-        level = 1;
+        currentLevel = 1;
+        currentBoss = null;
         player = new Player();
         background = new Background();
         city = new City();
@@ -2098,6 +2739,9 @@
         shieldPickups = [];
         cityHealthPickups = [];
         electricHosePickups = [];
+        bombPickups = [];
+        lifeShieldPickups = [];
+        playerHealthPickups = []; // New array
         particles = [];
         notifications = [];
         scorePopups = [];
@@ -2108,16 +2752,15 @@
         obstacleInterval = 3000;
         gameOverEl.style.display = "none";
         lastTime = 0;
-        if (
-          backgroundMusic &&
-          typeof backgroundMusic.currentTime !== "undefined"
-        ) {
+        if (backgroundMusic && typeof backgroundMusic.currentTime !== "undefined") {
           if (backgroundMusic?.currentTime) {
             backgroundMusic.currentTime = 0;
           }
         }
         backgroundMusic.play();
         animate(0);
+        levelStartScore = 0;
+        nextLevelThreshold = 1000;
       });
 
       document.getElementById("storeBtn").addEventListener("click", () => {
@@ -2133,7 +2776,8 @@
         comboTimer = 0;
         gameSpeed = 1;
         gameOver = false;
-        level = 1;
+        currentLevel = 1;
+        currentBoss = null;
         player = new Player();
         background = new Background();
         city = new City();
@@ -2146,6 +2790,9 @@
         shieldPickups = [];
         cityHealthPickups = [];
         electricHosePickups = [];
+        bombPickups = [];
+        lifeShieldPickups = [];
+        playerHealthPickups = []; // New array
         particles = [];
         notifications = [];
         scorePopups = [];
@@ -2158,6 +2805,8 @@
         backgroundMusic.pause();
         updateStoreUI();
         tutorialEl.style.display = "flex";
+        levelStartScore = 0;
+        nextLevelThreshold = 1000;
       });
 
       // Start Button: Initialize audio on user gesture.
@@ -2183,6 +2832,349 @@
       });
 
       updateStoreUI();
+
+      // Boss Class
+      class Boss {
+        constructor(level) {
+          this.level = level;
+          this.art = bosses[level].art;
+          this.maxHealth = bosses[level].health;
+          this.health = this.maxHealth;
+          this.x = canvas.width - 150;
+          this.y = canvas.height / 2 - 30;
+          this.pattern = bosses[level].pattern;
+          this.speed = 2;
+          this.phase = 0;
+          this.attackTimer = 0;
+          this.attackInterval = 2000;
+          this.isActive = false;
+          this.hitFlash = 0;
+        }
+
+        update(deltaTime) {
+          if (!this.isActive) return;
+
+          // Movement patterns
+          switch (this.pattern) {
+            case "linear":
+              this.y += Math.sin(this.phase) * this.speed;
+              this.phase += 0.02;
+              break;
+            case "sine":
+              this.y = canvas.height/2 + Math.sin(this.phase) * 100;
+              this.phase += 0.03;
+              break;
+            case "spiral":
+              this.x = canvas.width - 150 + Math.cos(this.phase) * 50;
+              this.y = canvas.height/2 + Math.sin(this.phase) * 50;
+              this.phase += 0.04;
+              break;
+          }
+
+          // Keep boss in bounds
+          if (this.y < 50) this.y = 50;
+          if (this.y > canvas.height - 100) this.y = canvas.height - 100;
+
+          // Attack logic
+          this.attackTimer += deltaTime;
+          if (this.attackTimer >= this.attackInterval) {
+            this.attack();
+            this.attackTimer = 0;
+          }
+
+          // Hit flash effect
+          if (this.hitFlash > 0) {
+            this.hitFlash -= deltaTime;
+          }
+        }
+
+        draw() {
+          if (!this.isActive) return;
+
+          // Draw health bar
+          const healthBarWidth = 100;
+          const healthPercentage = this.health / this.maxHealth;
+          ctx.fillStyle = "red";
+          ctx.fillRect(this.x, this.y - 20, healthBarWidth, 5);
+          ctx.fillStyle = "green";
+          ctx.fillRect(this.x, this.y - 20, healthBarWidth * healthPercentage, 5);
+
+          // Draw boss with hit flash effect
+          const color = this.hitFlash > 0 ? "#ff0000" : "#ffffff";
+          drawAsciiArt(this.art, this.x, this.y, 20, color);
+        }
+
+        attack() {
+          switch (this.level) {
+            case 1:
+              // Level 1 boss shoots 3 fire bubbles in a spread
+              for (let i = -1; i <= 1; i++) {
+                let fire = new FireBubble("normal");
+                fire.x = this.x;
+                fire.y = this.y + (i * 30);
+                fire.speed *= 1.5;
+                fireBubbles.push(fire);
+              }
+              break;
+            case 2:
+              // Level 2 boss alternates between normal and electrical fires
+              for (let i = -2; i <= 2; i++) {
+                let fire = new FireBubble(i % 2 === 0 ? "normal" : "electrical");
+                fire.x = this.x;
+                fire.y = this.y + (i * 25);
+                fire.speed *= 1.75;
+                fireBubbles.push(fire);
+              }
+              break;
+            case 3:
+              // Level 3 boss creates a spiral pattern of fires
+              for (let i = 0; i < 8; i++) {
+                let angle = (i / 8) * Math.PI * 2;
+                let fire = new FireBubble(i % 2 === 0 ? "normal" : "electrical");
+                fire.x = this.x + Math.cos(angle) * 50;
+                fire.y = this.y + Math.sin(angle) * 50;
+                fire.speed *= 2;
+                fireBubbles.push(fire);
+              }
+              break;
+          }
+        }
+
+        hit(damage) {
+          this.health -= damage;
+          this.hitFlash = 100;
+          // Add points for hitting the boss
+          addScore(5);  // Use addScore for boss hits
+          if (this.health <= 0) {
+            this.defeat();
+          }
+        }
+
+        defeat() {
+          this.isActive = false;
+          spawnParticles(this.x, this.y, "255,255,0", 100);
+          const bossBonus = 1000 * this.level;
+          addScore(bossBonus);  // Use addScore for consistency
+          storeData.currency += 500 * this.level;
+          addNotification(`Boss ${this.level} Defeated! +${bossBonus} Score!`);
+          
+          if (this.level < MAX_LEVELS) {
+            currentLevel = Math.min(currentLevel + 1, MAX_LEVELS);
+            currentLevelScore = 0;  // Reset score for new level
+            bossSpawned = false;
+            currentBoss = null;
+            // Reset game speed for new level
+            gameSpeed = LEVEL_SPEEDS[currentLevel] || 1.0;
+            showLevelModal(currentLevel);
+            // Reset level parameters
+            bubbleTimer = 0;
+            obstacleTimer = 0;
+            fireBubbles = [];
+            obstacles = [];
+          } else {
+            // Handle game completion
+            addNotification("Congratulations! You've completed all levels!");
+            gameOver = true;
+            backgroundMusic.pause();
+            gameOverText.textContent = "Victory! Final Score: " + score;
+          }
+        }
+      }
+
+      let currentBoss = null;
+
+      // Update the powerup duration calculations
+      function getPowerupDuration() {
+        const baseDuration = 5000;
+        const durationMultiplier = 1 + (storeData.powerupDurationTier * 0.5); // 50% increase per tier
+        return baseDuration * durationMultiplier;
+      }
+
+      document.getElementById("upgradeBaseHealthBtn").addEventListener("click", () => {
+        if (storeData.baseHealthTier < 3) {
+          let cost = 1000 * Math.pow(2, storeData.baseHealthTier);
+          if (storeData.currency >= cost) {
+            storeData.currency -= cost;
+            storeData.baseHealthTier++;
+            player.maxLives = 3 + storeData.baseHealthTier;
+            player.lives = Math.min(player.lives + 1, player.maxLives);
+            saveStoreData();
+            updateStoreUI();
+            addNotification("Base Health Upgraded! Maximum Lives: " + player.maxLives);
+          } else {
+            alert("Not enough currency!");
+          }
+        } else {
+          alert("Base Health is fully upgraded!");
+        }
+      });
+
+      document.getElementById("upgradePickupSizeBtn").addEventListener("click", () => {
+        if (storeData.pickupSizeTier < 2) {
+          let cost = 1500 * Math.pow(2, storeData.pickupSizeTier);
+          if (storeData.currency >= cost) {
+            storeData.currency -= cost;
+            storeData.pickupSizeTier++;
+            saveStoreData();
+            updateStoreUI();
+            addNotification("Pickup Size Upgraded!");
+          } else {
+            alert("Not enough currency!");
+          }
+        } else {
+          alert("Pickup Size is fully upgraded!");
+        }
+      });
+
+      document.getElementById("upgradePowerupDurationBtn").addEventListener("click", () => {
+        if (storeData.powerupDurationTier < 3) {
+          let cost = 2000 * Math.pow(2, storeData.powerupDurationTier);
+          if (storeData.currency >= cost) {
+            storeData.currency -= cost;
+            storeData.powerupDurationTier++;
+            saveStoreData();
+            updateStoreUI();
+            addNotification("Powerup Duration Upgraded!");
+          } else {
+            alert("Not enough currency!");
+          }
+        } else {
+          alert("Powerup Duration is fully upgraded!");
+        }
+      });
+
+      // Game initialization
+      window.onload = function() {
+        // Initialize player
+        player = new Player();
+        
+        // Initialize game loop
+      };
+
+      // Remove duplicate declarations at line 1039 and 1225
+      function startGame() {
+        // Update values without redeclaring
+        player = new Player();
+        currentLevel = 1;
+        // ... rest of startGame function
+      }
+
+      // In the reset function, update instead of redeclare
+      function reset() {
+        // Remove any existing level modals to prevent duplicates
+        document.querySelectorAll('.level-modal').forEach(modal => modal.remove());
+        // Update existing variables instead of redeclaring
+        score = 0;  // Reset overall score
+        currentLevelScore = 0;  // Reset current level score
+        comboCount = 0;
+        currentLevel = 1;
+        player = new Player();
+        notifications = [];
+        gameOver = false;
+        isPaused = false;
+        levelTransitionActive = false;
+        bossSpawned = false;
+        currentBoss = null;
+        
+        // ... rest of reset function ...
+      }
+
+      class PlayerHealthPickup {
+        constructor() {
+          this.x = canvas.width + 30;
+          this.y = Math.random() * (canvas.height - 30);
+          this.speed = gameSpeed;
+          this.rotation = 0;
+        }
+        update(deltaTime) {
+          this.x -= this.speed;
+          this.rotation += deltaTime * 0.005;
+          this.draw();
+        }
+        draw() {
+          drawRotatingGlowingText(ctx, "💝", this.x, this.y, "20px monospace", "#ff1493", this.rotation);
+        }
+      }
+
+      function addScore(points) {
+        score += points * (comboCount || 1);  // Add to overall score with combo multiplier
+        currentLevelScore += points;  // Add to current level score WITHOUT multiplier
+        scoreEl.textContent = score;  // Update overall score display
+        
+        // Check for boss spawn based on current level score
+        const levelThreshold = LEVEL_SCORE_THRESHOLDS[currentLevel] || 1000;
+        if (currentLevelScore >= levelThreshold && !bossSpawned && currentLevel <= MAX_LEVELS) {
+          bossSpawned = true;
+          currentBoss = new Boss(Math.min(currentLevel, MAX_LEVELS));
+          currentBoss.isActive = true;
+          // Add dramatic notifications for boss approach
+          addNotification(`⚠️ WARNING: Level ${currentLevel} Boss Approaching! ⚠️`);
+          addNotification(`Prepare for Battle!`);
+          // Play a warning sound if you have one
+          if (explosionSound) {
+            explosionSound.currentTime = 0;
+            explosionSound.play();
+          }
+        }
+      }
+
+      // Add pause functionality
+      document.getElementById("pauseBtn").addEventListener("click", () => {
+        isPaused = !isPaused;
+        const pauseBtn = document.getElementById("pauseBtn");
+        const pauseMenu = document.getElementById("pauseMenu");
+        
+        if (isPaused) {
+          cancelAnimationFrame(animationId);
+          pauseBtn.textContent = "▶️";
+          pauseMenu.style.display = "flex";
+          if (backgroundMusic) backgroundMusic.pause();
+        } else {
+          pauseBtn.textContent = "⏸️";
+          pauseMenu.style.display = "none";
+          if (backgroundMusic) backgroundMusic.play();
+          animate(0);
+        }
+        // Prevent button from getting focus
+        pauseBtn.blur();
+        // Return focus to canvas
+        canvas.focus();
+      });
+
+      // Prevent spacebar from triggering buttons
+      document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space') {
+          e.preventDefault();
+        }
+      });
+
+      // Keep canvas focusable
+      canvas.tabIndex = 1;
+      canvas.style.outline = 'none';
+      
+      // Update resume button to also handle focus
+      document.getElementById("resumeBtn").addEventListener("click", () => {
+        isPaused = false;
+        const pauseBtn = document.getElementById("pauseBtn");
+        pauseBtn.textContent = "⏸️";
+        document.getElementById("pauseMenu").style.display = "none";
+        if (backgroundMusic) backgroundMusic.play();
+        animate(0);
+        // Prevent button from getting focus and return to canvas
+        pauseBtn.blur();
+        canvas.focus();
+      });
+
+      // Add quit to menu functionality with focus handling
+      document.getElementById("quitToMenuBtn").addEventListener("click", () => {
+        isPaused = false;
+        document.getElementById("pauseMenu").style.display = "none";
+        reset();
+        updateStoreUI();
+        // Return focus to canvas
+        canvas.focus();
+      });
+
     </script>
   </body>
 </html>
